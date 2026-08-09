@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="favGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#10F5A0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect x="0" y="0" width="32" height="32" rx="7" fill="#0B1120"/>
+
+  <!-- Hexagon -->
+  <path d="M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z"
+        fill="none"
+        stroke="url(#favGrad)"
+        stroke-width="1.8"
+        stroke-linejoin="round"/>
+
+  <!-- Lightning bolt -->
+  <path d="M17.5 9 L11 18 L15 18 L14 24 L21 15 L17 15 Z"
+        fill="url(#favGrad)"
+        stroke="url(#favGrad)"
+        stroke-width="0.3"
+        stroke-linejoin="round"/>
+</svg>
