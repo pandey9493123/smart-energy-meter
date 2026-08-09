@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – Smart Energy Meter</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ============================================================
+       ROOT VARIABLES
+    ============================================================ */
+    :root {
+      --bg-primary:    #0A1628;
+      --bg-secondary:  #112240;
+      --bg-card:       rgba(17, 34, 64, 0.85);
+      --bg-sidebar:    #0D1B2A;
+      --blue-primary:  #00B4D8;
+      --blue-deep:     #0077B6;
+      --green-neon:    #00FF88;
+      --amber:         #FFB703;
+      --red-alert:     #FF4444;
+      --purple:        #A855F7;
+      --pink:          #FF6B9D;
+      --text-primary:  #FFFFFF;
+      --text-secondary:#CBD5E1;
+      --text-muted:    #64748B;
+      --border:        rgba(0, 180, 216, 0.15);
+      --glow-blue:     0 0 20px rgba(0, 180, 216, 0.4);
+      --glow-green:    0 0 20px rgba(0, 255, 136, 0.4);
+      --sidebar-width: 260px;
+      --topbar-height: 65px;
+    }
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--blue-primary); border-radius: 3px; }
+
+    /* ============================================================
+       LOADING SCREEN
+    ============================================================ */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+
+    #loadingScreen.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00B4D8, #00FF88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0,180,216,0.2);
+      border-top-color: var(--blue-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ============================================================
+       SIDEBAR
+    ============================================================ */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--bg-primary);
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #00B4D8, #00FF88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 15px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 15px 12px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 15px;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: rgba(0,180,216,0.08);
+      color: var(--blue-primary);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(0,180,216,0.15), rgba(0,255,136,0.05));
+      color: var(--blue-primary);
+      border: 1px solid rgba(0,180,216,0.2);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--blue-primary);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red-alert);
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(0,180,216,0.05);
+      border: 1px solid var(--border);
+    }
+
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--bg-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .sidebar-user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sidebar-user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-user-email {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================================
+       TOPBAR
+    ============================================================ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: var(--topbar-height);
+      background: rgba(10, 22, 40, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      z-index: 999;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .topbar-greeting {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .topbar-greeting strong {
+      color: var(--text-primary);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Device status */
+    .device-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--green-neon);
+    }
+
+    .device-status.offline {
+      background: rgba(255,68,68,0.08);
+      border-color: rgba(255,68,68,0.2);
+      color: var(--red-alert);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-neon);
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .device-status.offline .status-dot {
+      background: var(--red-alert);
+      animation: none;
+    }
+
+    /* Topbar buttons */
+    .topbar-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .topbar-btn:hover {
+      background: rgba(0,180,216,0.1);
+      color: var(--blue-primary);
+      border-color: rgba(0,180,216,0.3);
+    }
+
+    .topbar-btn .notif-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 16px;
+      height: 16px;
+      background: var(--red-alert);
+      border-radius: 50%;
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+
+    .topbar-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--bg-primary);
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+
+    .topbar-avatar:hover {
+      border-color: var(--blue-primary);
+    }
+
+    /* ============================================================
+       MAIN CONTENT
+    ============================================================ */
+    .main {
+      margin-left: var(--sidebar-width);
+      margin-top: var(--topbar-height);
+      padding: 25px;
+      min-height: calc(100vh - var(--topbar-height));
+    }
+
+    /* ============================================================
+       FAULT ALERT BANNER
+    ============================================================ */
+    .fault-banner {
+      display: none;
+      background: linear-gradient(135deg, rgba(255,68,68,0.15), rgba(255,68,68,0.05));
+      border: 1px solid rgba(255,68,68,0.3);
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      align-items: center;
+      gap: 12px;
+      animation: faultPulse 2s ease-in-out infinite;
+    }
+
+    .fault-banner.show {
+      display: flex;
+    }
+
+    @keyframes faultPulse {
+      0%, 100% { border-color: rgba(255,68,68,0.3); }
+      50%       { border-color: rgba(255,68,68,0.8); box-shadow: 0 0 20px rgba(255,68,68,0.2); }
+    }
+
+    .fault-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,68,68,0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--red-alert);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .fault-text h4 {
+      font-size: 0.88rem;
+      color: var(--red-alert);
+      margin-bottom: 2px;
+    }
+
+    .fault-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       STATS CARDS ROW
+    ============================================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,180,216,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+    }
+
+    .stat-card.voltage::after  { background: var(--blue-primary); box-shadow: 0 0 8px var(--blue-primary); }
+    .stat-card.current::after  { background: var(--green-neon);   box-shadow: 0 0 8px var(--green-neon); }
+    .stat-card.power::after    { background: var(--amber);        box-shadow: 0 0 8px var(--amber); }
+    .stat-card.energy::after   { background: var(--purple);       box-shadow: 0 0 8px var(--purple); }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .stat-card.voltage .stat-icon { background: rgba(0,180,216,0.12); color: var(--blue-primary); }
+    .stat-card.current .stat-icon { background: rgba(0,255,136,0.12); color: var(--green-neon); }
+    .stat-card.power   .stat-icon { background: rgba(255,183,3,0.12); color: var(--amber); }
+    .stat-card.energy  .stat-icon { background: rgba(168,85,247,0.12); color: var(--purple); }
+
+    .stat-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-card.voltage .stat-value { color: var(--blue-primary); }
+    .stat-card.current .stat-value { color: var(--green-neon); }
+    .stat-card.power   .stat-value { color: var(--amber); }
+    .stat-card.energy  .stat-value { color: var(--purple); }
+
+    .stat-unit {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .stat-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      color: var(--green-neon);
+      background: rgba(0,255,136,0.08);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .stat-live-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--green-neon);
+      border-radius: 50%;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    /* ============================================================
+       SECONDARY STATS (BILL + RELAY + FAULT)
+    ============================================================ */
+    .secondary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .info-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      border-color: rgba(0,180,216,0.3);
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .info-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-card-title i {
+      color: var(--blue-primary);
+    }
+
+    /* Bill card */
+    .bill-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .bill-item {
+      background: rgba(0,180,216,0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .bill-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .bill-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--pink);
+    }
+
+    .bill-value.tariff {
+      color: var(--amber);
+    }
+
+    /* Relay card */
+    .relay-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,180,216,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px 18px;
+      margin-bottom: 12px;
+    }
+
+    .relay-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .relay-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--red-alert);
+      transition: background 0.3s ease;
+    }
+
+    .relay-indicator.on {
+      background: var(--green-neon);
+      box-shadow: 0 0 10px var(--green-neon);
+    }
+
+    .relay-label {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .relay-state {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    .relay-state.on  { color: var(--green-neon); }
+    .relay-state.off { color: var(--red-alert); }
+
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,68,68,0.3);
+      border-radius: 28px;
+      border: 1px solid rgba(255,68,68,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--red-alert);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: rgba(0,255,136,0.2);
+      border-color: rgba(0,255,136,0.4);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(24px);
+      background: var(--green-neon);
+      box-shadow: 0 0 10px var(--green-neon);
+    }
+
+    .relay-note {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Fault status card */
+    .fault-status-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,255,136,0.05);
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 12px;
+      padding: 15px 18px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .fault-status-box.alert {
+      background: rgba(255,68,68,0.08);
+      border-color: rgba(255,68,68,0.3);
+      animation: faultPulse 2s ease-in-out infinite;
+    }
+
+    .fault-status-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .fault-status-box:not(.alert) .fault-status-icon {
+      background: rgba(0,255,136,0.12);
+      color: var(--green-neon);
+    }
+
+    .fault-status-box.alert .fault-status-icon {
+      background: rgba(255,68,68,0.15);
+      color: var(--red-alert);
+    }
+
+    .fault-status-text h4 {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .fault-status-box:not(.alert) .fault-status-text h4 { color: var(--green-neon); }
+    .fault-status-box.alert .fault-status-text h4 { color: var(--red-alert); }
+
+    .fault-status-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .fault-history-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      margin-top: 5px;
+    }
+
+    .fault-log {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .fault-log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.73rem;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+    }
+
+    .fault-log-item .log-time {
+      color: var(--text-muted);
+    }
+
+    .fault-log-item .log-status {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    .fault-log-item .log-status.fault {
+      background: rgba(255,68,68,0.15);
+      color: var(--red-alert);
+    }
+
+    .fault-log-item .log-status.normal {
+      background: rgba(0,255,136,0.1);
+      color: var(--green-neon);
+    }
+
+    /* ============================================================
+       CHARTS ROW
+    ============================================================ */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .chart-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-title i {
+      color: var(--blue-primary);
+    }
+
+    .chart-period {
+      display: flex;
+      gap: 5px;
+    }
+
+    .period-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .period-btn.active {
+      background: rgba(0,180,216,0.15);
+      color: var(--blue-primary);
+      border-color: rgba(0,180,216,0.3);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 260px;
+    }
+
+    /* Gauge chart */
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 260px;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
+
+    .gauge-canvas-wrap {
+      width: 100%;
+      height: 100%;
+    }
+
+    .gauge-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--blue-primary);
+    }
+
+    .gauge-unit {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .gauge-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* ============================================================
+       BOTTOM CHARTS ROW
+    ============================================================ */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .dash-footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .dash-footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .dash-footer span {
+      color: var(--blue-primary);
+    }
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      z-index: 99999;
+      transform: translateX(150%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 320px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-color: rgba(0,255,136,0.4); }
+    .toast.error   { border-color: rgba(255,68,68,0.4); }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .topbar {
+        left: 0;
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .secondary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* Mobile sidebar overlay */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+      }
+
+      .sidebar-overlay.show {
+        display: block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main {
+        padding: 15px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-greeting {
+        display: none;
+      }
+
+      .device-status span:last-child {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       LOADING SCREEN
+  ============================================================ -->
+  <div id="loadingScreen">
+    <div class="loading-logo">⚡ Smart Energy Meter</div>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">LOADING DASHBOARD...</p>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="toastIcon"></span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ============================================================
+       SIDEBAR
+  ============================================================ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">⚡</div>
+      <span class="sidebar-logo-text">Smart Energy Meter</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main Menu</span>
+
+      <a class="nav-item active" onclick="showSection('overview')">
+        <i class="fas fa-th-large"></i> Overview
+      </a>
+
+      <a class="nav-item" onclick="showSection('liveMonitor')">
+        <i class="fas fa-broadcast-tower"></i> Live Monitor
+      </a>
+
+      <a class="nav-item" onclick="showSection('analytics')">
+        <i class="fas fa-chart-area"></i> Analytics
+      </a>
+
+      <a class="nav-item" onclick="showSection('billing')">
+        <i class="fas fa-file-invoice-dollar"></i> Billing
+      </a>
+
+      <span class="nav-section-label">Controls</span>
+
+      <a class="nav-item" onclick="showSection('relay')">
+        <i class="fas fa-toggle-on"></i> Relay Control
+      </a>
+
+      <a class="nav-item" onclick="showSection('alerts')" id="alertNavItem">
+        <i class="fas fa-bell"></i> Alerts
+        <span class="nav-badge" id="alertBadge" style="display:none;">!</span>
+      </a>
+
+      <span class="nav-section-label">Account</span>
+
+      <a class="nav-item" href="profile.html">
+        <i class="fas fa-user"></i> Profile
+      </a>
+
+      <a class="nav-item" onclick="handleLogout()" style="color:var(--red-alert);">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+          <div class="sidebar-user-email" id="sidebarEmail">loading...</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       TOPBAR
+  ============================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <span class="topbar-greeting">
+        Welcome back, <strong id="topbarName">User</strong> 👋
+      </span>
+    </div>
+
+    <div class="topbar-right">
+      <div class="device-status" id="deviceStatus">
+        <span class="status-dot"></span>
+        <span>device001</span>
+        <span>Online</span>
+      </div>
+
+      <button class="topbar-btn" id="alertBtn" onclick="showSection('alerts')" title="Alerts">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" id="topAlertBadge" style="display:none;">!</span>
+      </button>
+
+      <button class="topbar-btn" onclick="toggleFullscreen()" title="Fullscreen">
+        <i class="fas fa-expand"></i>
+      </button>
+
+      <a href="profile.html" class="topbar-avatar" id="topbarAvatar" title="Profile">U</a>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main class="main" id="mainContent">
+
+    <!-- FAULT ALERT BANNER -->
+    <div class="fault-banner" id="faultBanner">
+      <div class="fault-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="fault-text">
+        <h4>⚠️ Fault Detected!</h4>
+        <p>Abnormal condition detected in your circuit. Check your connections immediately.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION: OVERVIEW (default)
+    ============================================================ -->
+    <div id="section-overview">
+
+      <!-- Live Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card voltage">
+          <div class="stat-header">
+            <span class="stat-label">Voltage</span>
+            <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+          </div>
+          <div class="stat-value" id="voltageValue">0 <span class="stat-unit">V</span></div>
+          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+        </div>
+
+        <div class="stat-card current">
+          <div class="stat-header">
+            <span class="stat-label">Current</span>
+            <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
+          </div>
+          <div class="stat-value" id="currentValue">0 <span class="stat-unit">A</span></div>
+          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+        </div>
+
+        <div class="stat-card power">
+          <div class="stat-header">
+            <span class="stat-label">Power</span>
+            <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
+          </div>
+          <div class="stat-value" id="powerValue">0 <span class="stat-unit">W</span></div>
+          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+        </div>
+
+        <div class="stat-card energy">
+          <div class="stat-header">
+            <span class="stat-label">Energy</span>
+            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+          </div>
+          <div class="stat-value" id="energyValue">0 <span class="stat-unit">kWh</span></div>
+          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+        </div>
+      </div>
+
+      <!-- Secondary Info Cards -->
+      <div class="secondary-grid">
+
+        <!-- Bill Card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3 class="info-card-title"><i class="fas fa-file-invoice-dollar"></i> Bill Estimation</h3>
+          </div>
+          <div class="bill-grid">
+            <div class="bill-item">
+              <div class="bill-label">Daily Bill</div>
+              <div class="bill-value">₹<span id="dailyBill">0.00</span></div>
+            </div>
+            <div class="bill-item">
+              <div class="bill-label">Monthly Bill</div>
+              <div class="bill-value">₹<span id="monthlyBill">0.00</span></div>
+            </div>
+            <div class="bill-item">
+              <div class="bill-label">Tariff Rate</div>
+              <div class="bill-value tariff">₹<span id="tariffDisplay">6.5</span>/kWh</div>
+            </div>
+            <div class="bill-item">
+              <div class="bill-label">Total Energy</div>
+              <div class="bill-value tariff"><span id="totalEnergyDisplay">0</span> kWh</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Relay Card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3 class="info-card-title"><i class="fas fa-toggle-on"></i> Relay Control</h3>
+          </div>
+
+          <div class="relay-status">
+            <div class="relay-info">
+              <div class="relay-indicator" id="relayIndicator"></div>
+              <span class="relay-label">Main Supply</span>
+            </div>
+            <span class="relay-state off" id="relayStateText">OFF</span>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--text-secondary);">Toggle Relay</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="relayToggle" onchange="toggleRelay(this.checked)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <p class="relay-note">
+            <i class="fas fa-info-circle"></i>
+            Controls the relay connected to your device
+          </p>
+        </div>
+
+        <!-- Fault Status Card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3 class="info-card-title"><i class="fas fa-shield-alt"></i> Fault Status</h3>
+          </div>
+
+          <div class="fault-status-box" id="faultStatusBox">
+            <div class="fault-status-icon"><i class="fas fa-check-circle" id="faultIcon"></i></div>
+            <div class="fault-status-text">
+              <h4 id="faultTitle">All Normal</h4>
+              <p id="faultDesc">No faults detected in the circuit</p>
+            </div>
+          </div>
+
+          <p class="fault-history-title">Recent Activity</p>
+          <div class="fault-log" id="faultLog">
+            <div class="fault-log-item">
+              <span>System Start</span>
+              <span class="log-time">--:--</span>
+              <span class="log-status normal">Normal</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title"><i class="fas fa-chart-line"></i> Live Power Graph</h3>
+            <div class="chart-period">
+              <button class="period-btn active">Live</button>
+              <button class="period-btn">1H</button>
+              <button class="period-btn">24H</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="powerChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title"><i class="fas fa-tachometer-alt"></i> Power Gauge</h3>
+          </div>
+          <div class="gauge-container">
+            <div class="gauge-wrap">
+              <div class="gauge-canvas-wrap">
+                <canvas id="gaugeChart"></canvas>
+              </div>
+              <div class="gauge-center-text">
+                <div class="gauge-value" id="gaugeValue">0</div>
+                <div class="gauge-unit">Watts</div>
+              </div>
+            </div>
+            <p class="gauge-label">Real-time Power Consumption</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Charts -->
+      <div class="bottom-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title"><i class="fas fa-bolt"></i> Voltage & Current</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="vcChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Energy Usage</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="energyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end section-overview -->
+
+    <!-- Footer -->
+    <div class="dash-footer">
+      <p>© 2025 <span>Smart Energy Meter</span> · Government Polytechnic College, Sangareddy · Designed by <span>Om Pandey</span></p>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       FIREBASE + ALL SCRIPTS
+  ============================================================ -->
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      set,
+      get
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    /* ── Firebase Config ── */
+    const firebaseConfig = {
+      apiKey:            "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
+      authDomain:        "smartenergymeter-dd01b.firebaseapp.com",
+      databaseURL:       "https://smartenergymeter-dd01b-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "smartenergymeter-dd01b",
+      storageBucket:     "smartenergymeter-dd01b.firebasestorage.app",
+      messagingSenderId: "299635627523",
+      appId:             "1:299635627523:web:fd8375e25803015e0de036"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+
+    /* ── Chart data arrays ── */
+    const MAX_POINTS = 30;
+    const timeLabels = [];
+    const powerData  = [];
+    const voltData   = [];
+    const currData   = [];
+    const energyData = [];
+
+    let powerChart, gaugeChart, vcChart, energyChart;
+    let userTariff = 6.5;
+    let faultLogArr = [];
+
+    /* ── Auth Guard ── */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      /* Set user info in UI */
+      const name    = user.displayName || 'User';
+      const email   = user.email || '';
+      const initial = name.charAt(0).toUpperCase();
+
+      document.getElementById('topbarName').textContent    = name.split(' ')[0];
+      document.getElementById('sidebarName').textContent   = name;
+      document.getElementById('sidebarEmail').textContent  = email;
+      document.getElementById('sidebarAvatar').textContent = initial;
+      document.getElementById('topbarAvatar').textContent  = initial;
+
+      /* Get user tariff from DB */
+      try {
+        const userSnap = await get(ref(db, 'Users/' + user.uid));
+        if (userSnap.exists()) {
+          const ud = userSnap.val();
+          if (ud.tariff) {
+            userTariff = parseFloat(ud.tariff);
+            document.getElementById('tariffDisplay').textContent = userTariff;
+          }
+        }
+      } catch (e) { /* use default tariff */ }
+
+      /* Initialize Charts */
+      initCharts();
+
+      /* Start listening to live data */
+      startLiveData(user);
+
+      /* Hide loading screen */
+      setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hide');
+      }, 800);
+    });
+
+    /* ── Start Live Data Listener ── */
+    function startLiveData(user) {
+      const liveRef = ref(db, 'SmartEnergyMeter/Devices/device001/Live');
+
+      onValue(liveRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        const d = snapshot.val();
+
+        const voltage = d.voltage || 0;
+        const current = d.current || 0;
+        const power   = d.power   || 0;
+        const energy  = d.energy  || 0;
+        const fault   = d.fault   || false;
+        const relay   = d.relay   || false;
+
+        /* Update stat cards */
+        document.getElementById('voltageValue').innerHTML =
+          `${voltage.toFixed(1)} <span class="stat-unit">V</span>`;
+        document.getElementById('currentValue').innerHTML =
+          `${current.toFixed(2)} <span class="stat-unit">A</span>`;
+        document.getElementById('powerValue').innerHTML =
+          `${power.toFixed(1)} <span class="stat-unit">W</span>`;
+        document.getElementById('energyValue').innerHTML =
+          `${energy.toFixed(3)} <span class="stat-unit">kWh</span>`;
+
+        /* Update bill */
+        const dailyBill   = (energy * userTariff).toFixed(2);
+        const monthlyBill = (energy * userTariff * 30).toFixed(2);
+        document.getElementById('dailyBill').textContent       = dailyBill;
+        document.getElementById('monthlyBill').textContent     = monthlyBill;
+        document.getElementById('totalEnergyDisplay').textContent = energy.toFixed(3);
+
+        /* Update relay */
+        const relayInd   = document.getElementById('relayIndicator');
+        const relayState = document.getElementById('relayStateText');
+        const relayTgl   = document.getElementById('relayToggle');
+
+        if (relay) {
+          relayInd.classList.add('on');
+          relayState.textContent = 'ON';
+          relayState.className   = 'relay-state on';
+          relayTgl.checked = true;
+        } else {
+          relayInd.classList.remove('on');
+          relayState.textContent = 'OFF';
+          relayState.className   = 'relay-state off';
+          relayTgl.checked = false;
+        }
+
+        /* Update fault */
+        const faultBanner    = document.getElementById('faultBanner');
+        const faultBox       = document.getElementById('faultStatusBox');
+        const faultIcon      = document.getElementById('faultIcon');
+        const faultTitle     = document.getElementById('faultTitle');
+        const faultDesc      = document.getElementById('faultDesc');
+        const alertBadge     = document.getElementById('alertBadge');
+        const topAlertBadge  = document.getElementById('topAlertBadge');
+
+        if (fault) {
+          faultBanner.classList.add('show');
+          faultBox.classList.add('alert');
+          faultIcon.className  = 'fas fa-exclamation-triangle';
+          faultTitle.textContent = 'Fault Detected!';
+          faultDesc.textContent  = 'Abnormal condition in circuit';
+          alertBadge.style.display    = 'inline';
+          topAlertBadge.style.display = 'flex';
+
+          addFaultLog('Fault Detected', 'fault');
+        } else {
+          faultBanner.classList.remove('show');
+          faultBox.classList.remove('alert');
+          faultIcon.className    = 'fas fa-check-circle';
+          faultTitle.textContent = 'All Normal';
+          faultDesc.textContent  = 'No faults detected';
+          alertBadge.style.display    = 'none';
+          topAlertBadge.style.display = 'none';
+        }
+
+        /* Update charts */
+        const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        timeLabels.push(now);
+        powerData.push(power);
+        voltData.push(voltage);
+        currData.push(current);
+        energyData.push(energy);
+
+        if (timeLabels.length > MAX_POINTS) {
+          timeLabels.shift();
+          powerData.shift();
+          voltData.shift();
+          currData.shift();
+          energyData.shift();
+        }
+
+        if (powerChart) {
+          powerChart.data.labels = [...timeLabels];
+          powerChart.data.datasets[0].data = [...powerData];
+          powerChart.update('none');
+        }
+
+        if (vcChart) {
+          vcChart.data.labels = [...timeLabels];
+          vcChart.data.datasets[0].data = [...voltData];
+          vcChart.data.datasets[1].data = [...currData];
+          vcChart.update('none');
+        }
+
+        if (energyChart) {
+          energyChart.data.labels = [...timeLabels];
+          energyChart.data.datasets[0].data = [...energyData];
+          energyChart.update('none');
+        }
+
+        /* Update gauge */
+        if (gaugeChart) {
+          const maxPower = 3000;
+          const pct      = Math.min(power / maxPower * 100, 100);
+          gaugeChart.data.datasets[0].data = [pct, 100 - pct];
+
+          if (pct < 30) {
+            gaugeChart.data.datasets[0].backgroundColor[0] = '#00FF88';
+          } else if (pct < 70) {
+            gaugeChart.data.datasets[0].backgroundColor[0] = '#FFB703';
+          } else {
+            gaugeChart.data.datasets[0].backgroundColor[0] = '#FF4444';
+          }
+
+          gaugeChart.update('none');
+          document.getElementById('gaugeValue').textContent = power.toFixed(0);
+        }
+
+        /* Update device status */
+        const ds = document.getElementById('deviceStatus');
+        if (voltage > 0 || current > 0 || power > 0) {
+          ds.classList.remove('offline');
+          ds.innerHTML = '<span class="status-dot"></span><span>device001</span><span>Online</span>';
+        }
+
+      }, (error) => {
+        console.error('Firebase read error:', error);
+        const ds = document.getElementById('deviceStatus');
+        ds.classList.add('offline');
+        ds.innerHTML = '<span class="status-dot"></span><span>device001</span><span>Offline</span>';
+      });
+    }
+
+    /* ── Relay Toggle ── */
+    window.toggleRelay = function(state) {
+      const relayRef = ref(db, 'SmartEnergyMeter/Devices/device001/Live/relay');
+      set(relayRef, state).then(() => {
+        showToast('success', '✅', `Relay turned ${state ? 'ON' : 'OFF'}`);
+      }).catch((err) => {
+        showToast('error', '❌', 'Failed to toggle relay');
+      });
+    };
+
+    /* ── Logout ── */
+    window.handleLogout = function() {
+      signOut(auth).then(() => {
+        window.location.href = 'login.html';
+      });
+    };
+
+    /* ── Initialize Charts ── */
+    function initCharts() {
+      const chartFont = { family: "'Poppins', sans-serif" };
+      const gridColor = 'rgba(0,180,216,0.08)';
+      const tickColor = '#64748B';
+
+      /* Power Line Chart */
+      const powerCtx = document.getElementById('powerChart').getContext('2d');
+      const powerGrad = powerCtx.createLinearGradient(0, 0, 0, 260);
+      powerGrad.addColorStop(0, 'rgba(0,180,216,0.3)');
+      powerGrad.addColorStop(1, 'rgba(0,180,216,0)');
+
+      powerChart = new Chart(powerCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Power (W)',
+            data: [],
+            borderColor: '#00B4D8',
+            backgroundColor: powerGrad,
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: '#00B4D8',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#112240',
+              titleFont: chartFont,
+              bodyFont: chartFont,
+              borderColor: 'rgba(0,180,216,0.3)',
+              borderWidth: 1,
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: tickColor, font: { size: 10 } },
+              beginAtZero: true,
+            }
+          },
+          animation: false,
+        }
+      });
+
+      /* Gauge (Doughnut) */
+      const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+      gaugeChart = new Chart(gaugeCtx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [0, 100],
+            backgroundColor: ['#00FF88', 'rgba(255,255,255,0.05)'],
+            borderWidth: 0,
+            circumference: 270,
+            rotation: 225,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '80%',
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          animation: false,
+        }
+      });
+
+      /* Voltage & Current Chart */
+      const vcCtx = document.getElementById('vcChart').getContext('2d');
+      vcChart = new Chart(vcCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Voltage (V)',
+              data: [],
+              borderColor: '#00B4D8',
+              borderWidth: 2,
+              tension: 0.4,
+              pointRadius: 0,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Current (A)',
+              data: [],
+              borderColor: '#00FF88',
+              borderWidth: 2,
+              tension: 0.4,
+              pointRadius: 0,
+              yAxisID: 'y1',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#CBD5E1', font: chartFont, boxWidth: 12 }
+            },
+            tooltip: {
+              backgroundColor: '#112240',
+              titleFont: chartFont,
+              bodyFont: chartFont,
+              borderColor: 'rgba(0,180,216,0.3)',
+              borderWidth: 1,
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
+            },
+            y: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: gridColor },
+              ticks: { color: '#00B4D8', font: { size: 10 } },
+              title: { display: true, text: 'Voltage (V)', color: '#00B4D8', font: { size: 10 } },
+              beginAtZero: true,
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#00FF88', font: { size: 10 } },
+              title: { display: true, text: 'Current (A)', color: '#00FF88', font: { size: 10 } },
+              beginAtZero: true,
+            }
+          },
+          animation: false,
+        }
+      });
+
+      /* Energy Bar Chart */
+      const energyCtx = document.getElementById('energyChart').getContext('2d');
+      const energyGrad = energyCtx.createLinearGradient(0, 0, 0, 260);
+      energyGrad.addColorStop(0, 'rgba(168,85,247,0.6)');
+      energyGrad.addColorStop(1, 'rgba(168,85,247,0.1)');
+
+      energyChart = new Chart(energyCtx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Energy (kWh)',
+            data: [],
+            backgroundColor: energyGrad,
+            borderColor: '#A855F7',
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#112240',
+              titleFont: chartFont,
+              bodyFont: chartFont,
+              borderColor: 'rgba(168,85,247,0.3)',
+              borderWidth: 1,
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: tickColor, font: { size: 10 } },
+              beginAtZero: true,
+            }
+          },
+          animation: false,
+        }
+      });
+    }
+
+    /* ── Fault Log ── */
+    function addFaultLog(msg, type) {
+      const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      const last = faultLogArr[faultLogArr.length - 1];
+      if (last && last.msg === msg && last.type === type) return;
+
+      faultLogArr.push({ msg, type, time: now });
+      if (faultLogArr.length > 10) faultLogArr.shift();
+
+      const logEl = document.getElementById('faultLog');
+      logEl.innerHTML = faultLogArr.map(l => `
+        <div class="fault-log-item">
+          <span>${l.msg}</span>
+          <span class="log-time">${l.time}</span>
+          <span class="log-status ${l.type}">${l.type === 'fault' ? 'Fault' : 'Normal'}</span>
+        </div>
+      `).reverse().join('');
+    }
+
+  </script>
+
+  <!-- ============================================================
+       UI SCRIPTS (non-module)
+  ============================================================ -->
+  <script>
+    /* ── Sidebar Toggle (mobile) ── */
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+
+    /* ── Section Navigation ── */
+    function showSection(sectionName) {
+      /* For now all content is in overview */
+      /* This is ready for future page expansion */
+      const items = document.querySelectorAll('.nav-item');
+      items.forEach(i => i.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      closeSidebar();
+    }
+
+    /* ── Fullscreen ── */
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    /* ── Toast ── */
+    let toastTimer;
+    function showToast(type, icon, msg) {
+      const toast = document.getElementById('toast');
+      toast.className = `toast ${type}`;
+      document.getElementById('toastIcon').textContent = icon;
+      document.getElementById('toastMsg').textContent  = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+
+</body>
+</html>

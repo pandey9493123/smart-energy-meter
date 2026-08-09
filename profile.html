@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile – Smart Energy Meter</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* ============================================================
+       ROOT VARIABLES
+    ============================================================ */
+    :root {
+      --bg-primary:    #0A1628;
+      --bg-secondary:  #112240;
+      --bg-card:       rgba(17, 34, 64, 0.85);
+      --bg-sidebar:    #0D1B2A;
+      --blue-primary:  #00B4D8;
+      --blue-deep:     #0077B6;
+      --green-neon:    #00FF88;
+      --amber:         #FFB703;
+      --red-alert:     #FF4444;
+      --purple:        #A855F7;
+      --pink:          #FF6B9D;
+      --text-primary:  #FFFFFF;
+      --text-secondary:#CBD5E1;
+      --text-muted:    #64748B;
+      --border:        rgba(0, 180, 216, 0.15);
+      --glow-blue:     0 0 20px rgba(0, 180, 216, 0.4);
+      --glow-green:    0 0 20px rgba(0, 255, 136, 0.4);
+      --sidebar-width: 260px;
+      --topbar-height: 65px;
+    }
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--blue-primary); border-radius: 3px; }
+
+    /* ============================================================
+       LOADING SCREEN
+    ============================================================ */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+
+    #loadingScreen.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00B4D8, #00FF88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0,180,216,0.2);
+      border-top-color: var(--blue-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ============================================================
+       SIDEBAR (same as dashboard)
+    ============================================================ */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--bg-primary);
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #00B4D8, #00FF88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 15px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 15px 12px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 15px;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: rgba(0,180,216,0.08);
+      color: var(--blue-primary);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(0,180,216,0.15), rgba(0,255,136,0.05));
+      color: var(--blue-primary);
+      border: 1px solid rgba(0,180,216,0.2);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--blue-primary);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .sidebar-footer {
+      padding: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(0,180,216,0.05);
+      border: 1px solid var(--border);
+    }
+
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--bg-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .sidebar-user-info { flex: 1; min-width: 0; }
+
+    .sidebar-user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-user-email {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================================
+       TOPBAR
+    ============================================================ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: var(--topbar-height);
+      background: rgba(10, 22, 40, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      z-index: 999;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .topbar-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-title i {
+      color: var(--blue-primary);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .topbar-btn:hover {
+      background: rgba(0,180,216,0.1);
+      color: var(--blue-primary);
+      border-color: rgba(0,180,216,0.3);
+    }
+
+    /* ============================================================
+       MAIN CONTENT
+    ============================================================ */
+    .main {
+      margin-left: var(--sidebar-width);
+      margin-top: var(--topbar-height);
+      padding: 25px;
+      min-height: calc(100vh - var(--topbar-height));
+    }
+
+    /* ============================================================
+       PROFILE HEADER CARD
+    ============================================================ */
+    .profile-header-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 35px 30px;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Gradient strip at top */
+    .profile-header-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-primary), var(--green-neon), var(--amber), var(--purple));
+    }
+
+    /* Background glow */
+    .profile-header-card::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(0,180,216,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .profile-header-content {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Large avatar */
+    .profile-avatar-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--bg-primary);
+      flex-shrink: 0;
+      border: 4px solid rgba(0,180,216,0.3);
+      box-shadow: var(--glow-blue);
+      position: relative;
+    }
+
+    .profile-avatar-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 22px;
+      height: 22px;
+      background: var(--green-neon);
+      border-radius: 50%;
+      border: 3px solid var(--bg-secondary);
+      box-shadow: 0 0 8px var(--green-neon);
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .profile-email {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profile-email i {
+      color: var(--blue-primary);
+      font-size: 0.8rem;
+    }
+
+    .profile-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .badge-user {
+      background: rgba(0,180,216,0.12);
+      border: 1px solid rgba(0,180,216,0.25);
+      color: var(--blue-primary);
+    }
+
+    .badge-device {
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.25);
+      color: var(--green-neon);
+    }
+
+    .badge-date {
+      background: rgba(168,85,247,0.1);
+      border: 1px solid rgba(168,85,247,0.25);
+      color: var(--purple);
+    }
+
+    .profile-header-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-edit-profile {
+      padding: 9px 22px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--glow-blue);
+      white-space: nowrap;
+    }
+
+    .btn-edit-profile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0,180,216,0.6);
+    }
+
+    .btn-back-dash {
+      padding: 9px 22px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-back-dash:hover {
+      border-color: rgba(0,180,216,0.4);
+      color: var(--blue-primary);
+    }
+
+    /* ============================================================
+       PROFILE SECTIONS GRID
+    ============================================================ */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .profile-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 25px;
+      transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+      border-color: rgba(0,180,216,0.3);
+    }
+
+    .profile-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .profile-card-title i {
+      color: var(--blue-primary);
+    }
+
+    .card-status {
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 8px;
+    }
+
+    .card-status.saved {
+      background: rgba(0,255,136,0.1);
+      color: var(--green-neon);
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+
+    /* ============================================================
+       FORM FIELDS
+    ============================================================ */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+      z-index: 2;
+      transition: color 0.3s ease;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 15px 11px 40px;
+      background: rgba(10, 22, 40, 0.8);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .form-input:focus {
+      border-color: var(--blue-primary);
+      background: rgba(10, 22, 40, 0.95);
+      box-shadow: 0 0 0 3px rgba(0,180,216,0.1);
+    }
+
+    .form-group:focus-within .input-icon {
+      color: var(--blue-primary);
+    }
+
+    .form-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .form-input:read-only {
+      opacity: 0.7;
+      cursor: default;
+    }
+
+    /* Password toggle */
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      z-index: 2;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--blue-primary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn-save {
+      padding: 11px 24px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--glow-blue);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0,180,216,0.6);
+    }
+
+    .btn-save:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-save.green {
+      background: linear-gradient(135deg, var(--green-neon), #11998E);
+      color: var(--bg-primary);
+      box-shadow: var(--glow-green);
+    }
+
+    .btn-save.green:hover {
+      box-shadow: 0 0 30px rgba(0,255,136,0.6);
+    }
+
+    .btn-danger {
+      padding: 11px 24px;
+      background: transparent;
+      border: 1.5px solid rgba(255,68,68,0.4);
+      border-radius: 10px;
+      color: var(--red-alert);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-danger:hover {
+      background: rgba(255,68,68,0.1);
+      border-color: var(--red-alert);
+    }
+
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* ============================================================
+       INFO DISPLAY ITEMS
+    ============================================================ */
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,180,216,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 15px;
+    }
+
+    .info-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-item-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .info-item-icon.blue   { background: rgba(0,180,216,0.12); color: var(--blue-primary); }
+    .info-item-icon.green  { background: rgba(0,255,136,0.12); color: var(--green-neon); }
+    .info-item-icon.amber  { background: rgba(255,183,3,0.12); color: var(--amber); }
+    .info-item-icon.purple { background: rgba(168,85,247,0.12); color: var(--purple); }
+    .info-item-icon.pink   { background: rgba(255,107,157,0.12); color: var(--pink); }
+
+    .info-item-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .info-item-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ============================================================
+       TARIFF SLIDER
+    ============================================================ */
+    .tariff-slider-wrap {
+      margin-top: 5px;
+    }
+
+    .tariff-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .tariff-value-large {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .tariff-unit {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(90deg, var(--green-neon), var(--amber), var(--red-alert));
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--amber);
+      border-radius: 50%;
+      border: 3px solid var(--bg-primary);
+      box-shadow: 0 0 10px rgba(255,183,3,0.5);
+      cursor: pointer;
+    }
+
+    .tariff-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       DANGER ZONE
+    ============================================================ */
+    .danger-zone {
+      background: rgba(255,68,68,0.04);
+      border: 1px solid rgba(255,68,68,0.2);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 22px;
+    }
+
+    .danger-zone .profile-card-header {
+      border-bottom-color: rgba(255,68,68,0.15);
+    }
+
+    .danger-zone .profile-card-title i {
+      color: var(--red-alert);
+    }
+
+    .danger-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      z-index: 99999;
+      transform: translateX(150%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 350px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-color: rgba(0,255,136,0.4); }
+    .toast.error   { border-color: rgba(255,68,68,0.4); }
+    .toast.info    { border-color: rgba(0,180,216,0.4); }
+
+    /* ============================================================
+       CONFIRM MODAL
+    ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5,13,26,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 9998;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 35px 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 18px;
+    }
+
+    .modal-icon.danger {
+      background: rgba(255,68,68,0.15);
+      border: 1px solid rgba(255,68,68,0.3);
+      color: var(--red-alert);
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn-cancel {
+      padding: 10px 22px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+      border-color: rgba(0,180,216,0.3);
+      color: var(--blue-primary);
+    }
+
+    .btn-confirm-danger {
+      padding: 10px 22px;
+      background: var(--red-alert);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-confirm-danger:hover {
+      background: #E03030;
+      transform: translateY(-2px);
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .dash-footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .dash-footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .dash-footer span {
+      color: var(--blue-primary);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 1024px) {
+      .profile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { left: 0; }
+      .main { margin-left: 0; }
+      .hamburger { display: block; }
+
+      .profile-header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .profile-badges { justify-content: center; }
+
+      .profile-header-actions {
+        flex-direction: row;
+        width: 100%;
+      }
+
+      .profile-header-actions > * { flex: 1; justify-content: center; }
+
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+      }
+
+      .sidebar-overlay.show { display: block; }
+    }
+
+    @media (max-width: 480px) {
+      .main { padding: 15px; }
+      .profile-avatar-large { width: 80px; height: 80px; font-size: 2rem; }
+      .danger-actions { flex-direction: column; }
+      .modal-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen">
+    <div class="loading-logo">⚡ Smart Energy Meter</div>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">LOADING PROFILE...</p>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="toastIcon"></span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- CONFIRM MODAL (for dangerous actions) -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
+      <h3 class="modal-title" id="modalTitle">Are you sure?</h3>
+      <p class="modal-desc" id="modalDesc">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm-danger" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SIDEBAR
+  ============================================================ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">⚡</div>
+      <span class="sidebar-logo-text">Smart Energy Meter</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main Menu</span>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-th-large"></i> Overview
+      </a>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-broadcast-tower"></i> Live Monitor
+      </a>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-chart-area"></i> Analytics
+      </a>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-file-invoice-dollar"></i> Billing
+      </a>
+
+      <span class="nav-section-label">Controls</span>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-toggle-on"></i> Relay Control
+      </a>
+
+      <a class="nav-item" href="dashboard.html">
+        <i class="fas fa-bell"></i> Alerts
+      </a>
+
+      <span class="nav-section-label">Account</span>
+
+      <a class="nav-item active">
+        <i class="fas fa-user"></i> Profile
+      </a>
+
+      <a class="nav-item" onclick="handleLogout()" style="color:var(--red-alert); cursor:pointer;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+          <div class="sidebar-user-email" id="sidebarEmail">loading...</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       TOPBAR
+  ============================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <h1 class="topbar-title">
+        <i class="fas fa-user-circle"></i> My Profile
+      </h1>
+    </div>
+
+    <div class="topbar-right">
+      <a href="dashboard.html" class="topbar-btn" title="Back to Dashboard">
+        <i class="fas fa-th-large"></i>
+      </a>
+      <a href="index.html" class="topbar-btn" title="Home">
+        <i class="fas fa-home"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main class="main">
+
+    <!-- PROFILE HEADER -->
+    <div class="profile-header-card">
+      <div class="profile-header-content">
+        <div class="profile-avatar-large" id="profileAvatar">
+          U
+          <div class="profile-avatar-badge"></div>
+        </div>
+
+        <div class="profile-info">
+          <h2 class="profile-name" id="profileName">Loading...</h2>
+          <p class="profile-email">
+            <i class="fas fa-envelope"></i>
+            <span id="profileEmail">loading...</span>
+          </p>
+          <div class="profile-badges">
+            <span class="profile-badge badge-user"><i class="fas fa-user"></i> User</span>
+            <span class="profile-badge badge-device"><i class="fas fa-microchip"></i> <span id="profileDevice">device001</span></span>
+            <span class="profile-badge badge-date"><i class="fas fa-calendar"></i> <span id="profileDate">Joined --</span></span>
+          </div>
+        </div>
+
+        <div class="profile-header-actions">
+          <button class="btn-edit-profile" onclick="toggleEditMode()">
+            <i class="fas fa-edit"></i> <span id="editBtnText">Edit Profile</span>
+          </button>
+          <a href="dashboard.html" class="btn-back-dash">
+            <i class="fas fa-arrow-left"></i> Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE CARDS GRID -->
+    <div class="profile-grid">
+
+      <!-- Personal Info Card -->
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h3 class="profile-card-title"><i class="fas fa-user-edit"></i> Personal Information</h3>
+          <span class="card-status saved" id="personalStatus" style="display:none;">
+            <i class="fas fa-check"></i> Saved
+          </span>
+        </div>
+
+        <form id="personalForm" onsubmit="savePersonalInfo(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" class="form-input edit-field" id="editName" placeholder="Your full name" disabled />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" class="form-input" id="editEmail" placeholder="your@email.com" readonly />
+            </div>
+            <p class="form-hint"><i class="fas fa-info-circle"></i> Email cannot be changed</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Device ID</label>
+              <div class="input-wrapper">
+                <i class="fas fa-microchip input-icon"></i>
+                <input type="text" class="form-input edit-field" id="editDevice" placeholder="device001" disabled />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">User Role</label>
+              <div class="input-wrapper">
+                <i class="fas fa-shield-alt input-icon"></i>
+                <input type="text" class="form-input" id="editRole" value="User" readonly />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-save edit-only" id="savePersonalBtn" style="display:none;">
+            <i class="fas fa-save"></i> Save Changes
+            <div class="spinner" id="personalSpinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- Tariff Settings Card -->
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h3 class="profile-card-title"><i class="fas fa-rupee-sign"></i> Tariff Settings</h3>
+          <span class="card-status saved" id="tariffStatus" style="display:none;">
+            <i class="fas fa-check"></i> Saved
+          </span>
+        </div>
+
+        <form id="tariffForm" onsubmit="saveTariff(event)">
+          <div class="form-group">
+            <label class="form-label">Electricity Tariff Rate</label>
+            <div class="tariff-slider-wrap">
+              <div class="tariff-display">
+                <span class="tariff-value-large">₹<span id="tariffValueDisplay">6.5</span></span>
+                <span class="tariff-unit">per kWh</span>
+              </div>
+              <input
+                type="range"
+                id="tariffSlider"
+                min="1"
+                max="15"
+                step="0.5"
+                value="6.5"
+                oninput="updateTariffDisplay(this.value)"
+                disabled
+                class="edit-field"
+              />
+              <div class="tariff-labels">
+                <span>₹1</span>
+                <span>₹5</span>
+                <span>₹10</span>
+                <span>₹15</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Or Enter Manually</label>
+            <div class="input-wrapper">
+              <i class="fas fa-rupee-sign input-icon"></i>
+              <input
+                type="number"
+                class="form-input edit-field"
+                id="tariffInput"
+                placeholder="6.5"
+                step="0.1"
+                min="1"
+                max="50"
+                disabled
+                oninput="syncTariff(this.value)"
+              />
+            </div>
+            <p class="form-hint"><i class="fas fa-info-circle"></i> Check your electricity board for exact tariff rate</p>
+          </div>
+
+          <button type="submit" class="btn-save green edit-only" id="saveTariffBtn" style="display:none;">
+            <i class="fas fa-save"></i> Update Tariff
+            <div class="spinner" id="tariffSpinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- Change Password Card -->
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h3 class="profile-card-title"><i class="fas fa-lock"></i> Change Password</h3>
+        </div>
+
+        <form id="passwordForm" onsubmit="changePassword(event)">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password" />
+              <button type="button" class="password-toggle" onclick="togglePwd('currentPassword','eye1')">
+                <i class="fas fa-eye" id="eye1"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-key input-icon"></i>
+              <input type="password" class="form-input" id="newPassword" placeholder="Min 6 characters" />
+              <button type="button" class="password-toggle" onclick="togglePwd('newPassword','eye2')">
+                <i class="fas fa-eye" id="eye2"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-key input-icon"></i>
+              <input type="password" class="form-input" id="confirmNewPassword" placeholder="Re-enter new password" />
+              <button type="button" class="password-toggle" onclick="togglePwd('confirmNewPassword','eye3')">
+                <i class="fas fa-eye" id="eye3"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-save" id="changePassBtn">
+            <i class="fas fa-key"></i> Change Password
+            <div class="spinner" id="passSpinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- Account Info Card -->
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h3 class="profile-card-title"><i class="fas fa-info-circle"></i> Account Details</h3>
+        </div>
+
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-item-left">
+              <div class="info-item-icon blue"><i class="fas fa-fingerprint"></i></div>
+              <div>
+                <div class="info-item-label">User ID</div>
+                <div class="info-item-value" id="infoUID" style="font-size:0.7rem;">Loading...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-item-left">
+              <div class="info-item-icon green"><i class="fas fa-microchip"></i></div>
+              <div>
+                <div class="info-item-label">Device ID</div>
+                <div class="info-item-value" id="infoDevice">device001</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-item-left">
+              <div class="info-item-icon amber"><i class="fas fa-rupee-sign"></i></div>
+              <div>
+                <div class="info-item-label">Tariff Rate</div>
+                <div class="info-item-value" id="infoTariff">₹6.5/kWh</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-item-left">
+              <div class="info-item-icon purple"><i class="fas fa-calendar-check"></i></div>
+              <div>
+                <div class="info-item-label">Account Created</div>
+                <div class="info-item-value" id="infoCreated">--</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-item-left">
+              <div class="info-item-icon pink"><i class="fas fa-sign-in-alt"></i></div>
+              <div>
+                <div class="info-item-label">Last Login</div>
+                <div class="info-item-value" id="infoLastLogin">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end profile-grid -->
+
+    <!-- DANGER ZONE -->
+    <div class="danger-zone">
+      <div class="profile-card-header">
+        <h3 class="profile-card-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:18px; line-height:1.6;">
+        These actions are irreversible. Please proceed with caution.
+      </p>
+      <div class="danger-actions">
+        <button class="btn-danger" onclick="confirmResetData()">
+          <i class="fas fa-redo-alt"></i> Reset Energy Data
+        </button>
+        <button class="btn-danger" onclick="confirmDeleteAccount()">
+          <i class="fas fa-trash-alt"></i> Delete Account
+        </button>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dash-footer">
+      <p>© 2025 <span>Smart Energy Meter</span> · Government Polytechnic College, Sangareddy · Designed by <span>Om Pandey</span></p>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       FIREBASE + SCRIPTS
+  ============================================================ -->
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      updateProfile,
+      updatePassword,
+      reauthenticateWithCredential,
+      EmailAuthProvider,
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      update,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    /* ── Firebase Config ── */
+    const firebaseConfig = {
+      apiKey:            "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
+      authDomain:        "smartenergymeter-dd01b.firebaseapp.com",
+      databaseURL:       "https://smartenergymeter-dd01b-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "smartenergymeter-dd01b",
+      storageBucket:     "smartenergymeter-dd01b.firebasestorage.app",
+      messagingSenderId: "299635627523",
+      appId:             "1:299635627523:web:fd8375e25803015e0de036"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+
+    let currentUser = null;
+    let userData    = null;
+
+    /* ── Auth Guard ── */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = user;
+      const name    = user.displayName || 'User';
+      const email   = user.email || '';
+      const initial = name.charAt(0).toUpperCase();
+
+      /* Header */
+      document.getElementById('profileAvatar').childNodes[0].textContent = initial;
+      document.getElementById('profileName').textContent   = name;
+      document.getElementById('profileEmail').textContent  = email;
+
+      /* Sidebar */
+      document.getElementById('sidebarAvatar').textContent = initial;
+      document.getElementById('sidebarName').textContent   = name;
+      document.getElementById('sidebarEmail').textContent  = email;
+
+      /* Form */
+      document.getElementById('editName').value    = name;
+      document.getElementById('editEmail').value   = email;
+
+      /* Account info */
+      document.getElementById('infoUID').textContent = user.uid;
+
+      /* Last login */
+      if (user.metadata && user.metadata.lastSignInTime) {
+        const ll = new Date(user.metadata.lastSignInTime);
+        document.getElementById('infoLastLogin').textContent =
+          ll.toLocaleDateString('en-IN') + ' ' + ll.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      }
+
+      /* Get user data from DB */
+      try {
+        const snap = await get(ref(db, 'Users/' + user.uid));
+        if (snap.exists()) {
+          userData = snap.val();
+
+          if (userData.deviceId) {
+            document.getElementById('editDevice').value        = userData.deviceId;
+            document.getElementById('profileDevice').textContent = userData.deviceId;
+            document.getElementById('infoDevice').textContent   = userData.deviceId;
+          }
+
+          if (userData.tariff) {
+            const t = parseFloat(userData.tariff);
+            document.getElementById('tariffSlider').value            = t;
+            document.getElementById('tariffInput').value             = t;
+            document.getElementById('tariffValueDisplay').textContent = t;
+            document.getElementById('infoTariff').textContent        = '₹' + t + '/kWh';
+          }
+
+          if (userData.createdAt) {
+            const cd = new Date(userData.createdAt);
+            document.getElementById('profileDate').textContent =
+              'Joined ' + cd.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+            document.getElementById('infoCreated').textContent =
+              cd.toLocaleDateString('en-IN') + ' ' + cd.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+          }
+
+          if (userData.role) {
+            document.getElementById('editRole').value = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+          }
+        }
+      } catch (e) { console.log('User data fetch error'); }
+
+      /* Hide loading */
+      setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hide');
+      }, 600);
+    });
+
+    /* ── Save Personal Info ── */
+    window.savePersonalInfo = async function(e) {
+      e.preventDefault();
+      const newName   = document.getElementById('editName').value.trim();
+      const newDevice = document.getElementById('editDevice').value.trim();
+
+      if (!newName || newName.length < 2) {
+        showToast('error', '❌', 'Name must be at least 2 characters');
+        return;
+      }
+
+      if (!newDevice) {
+        showToast('error', '❌', 'Device ID is required');
+        return;
+      }
+
+      const btn     = document.getElementById('savePersonalBtn');
+      const spinner = document.getElementById('personalSpinner');
+      btn.disabled  = true;
+      spinner.style.display = 'block';
+
+      try {
+        await updateProfile(currentUser, { displayName: newName });
+
+        await update(ref(db, 'Users/' + currentUser.uid), {
+          name:     newName,
+          deviceId: newDevice
+        });
+
+        /* Update UI */
+        document.getElementById('profileName').textContent     = newName;
+        document.getElementById('sidebarName').textContent     = newName;
+        document.getElementById('sidebarAvatar').textContent   = newName.charAt(0).toUpperCase();
+        document.getElementById('profileAvatar').childNodes[0].textContent = newName.charAt(0).toUpperCase();
+        document.getElementById('profileDevice').textContent   = newDevice;
+        document.getElementById('infoDevice').textContent      = newDevice;
+
+        showToast('success', '✅', 'Profile updated successfully!');
+        showSavedStatus('personalStatus');
+
+      } catch (err) {
+        showToast('error', '❌', 'Failed to update profile');
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    };
+
+    /* ── Save Tariff ── */
+    window.saveTariff = async function(e) {
+      e.preventDefault();
+      const tariff = parseFloat(document.getElementById('tariffInput').value || document.getElementById('tariffSlider').value);
+
+      if (!tariff || tariff <= 0 || tariff > 50) {
+        showToast('error', '❌', 'Enter a valid tariff (1-50)');
+        return;
+      }
+
+      const btn     = document.getElementById('saveTariffBtn');
+      const spinner = document.getElementById('tariffSpinner');
+      btn.disabled  = true;
+      spinner.style.display = 'block';
+
+      try {
+        await update(ref(db, 'Users/' + currentUser.uid), { tariff: tariff });
+        document.getElementById('infoTariff').textContent = '₹' + tariff + '/kWh';
+        showToast('success', '✅', 'Tariff updated to ₹' + tariff + '/kWh');
+        showSavedStatus('tariffStatus');
+      } catch (err) {
+        showToast('error', '❌', 'Failed to update tariff');
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    };
+
+    /* ── Change Password ── */
+    window.changePassword = async function(e) {
+      e.preventDefault();
+      const currentPwd = document.getElementById('currentPassword').value;
+      const newPwd     = document.getElementById('newPassword').value;
+      const confirmPwd = document.getElementById('confirmNewPassword').value;
+
+      if (!currentPwd) { showToast('error', '❌', 'Enter current password'); return; }
+      if (!newPwd || newPwd.length < 6) { showToast('error', '❌', 'New password must be at least 6 characters'); return; }
+      if (newPwd !== confirmPwd) { showToast('error', '❌', 'Passwords do not match'); return; }
+      if (newPwd === currentPwd) { showToast('error', '❌', 'New password must be different'); return; }
+
+      const btn     = document.getElementById('changePassBtn');
+      const spinner = document.getElementById('passSpinner');
+      btn.disabled  = true;
+      spinner.style.display = 'block';
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPwd);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPwd);
+
+        showToast('success', '✅', 'Password changed successfully!');
+
+        document.getElementById('currentPassword').value    = '';
+        document.getElementById('newPassword').value        = '';
+        document.getElementById('confirmNewPassword').value = '';
+      } catch (err) {
+        if (err.code === 'auth/wrong-password') {
+          showToast('error', '❌', 'Current password is incorrect');
+        } else {
+          showToast('error', '❌', 'Failed to change password. Try re-login.');
+        }
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    };
+
+    /* ── Reset Energy Data ── */
+    window.confirmResetData = function() {
+      document.getElementById('modalTitle').textContent = 'Reset Energy Data?';
+      document.getElementById('modalDesc').textContent  = 'This will reset the energy counter to 0 in your device. Live readings will continue.';
+      document.getElementById('modalConfirmBtn').onclick = resetEnergyData;
+      document.getElementById('confirmModal').classList.add('open');
+    };
+
+    async function resetEnergyData() {
+      try {
+        await update(ref(db, 'SmartEnergyMeter/Devices/device001/Live'), { energy: 0 });
+        showToast('success', '✅', 'Energy data reset to 0');
+        closeModal();
+      } catch (err) {
+        showToast('error', '❌', 'Failed to reset data');
+      }
+    }
+
+    /* ── Delete Account ── */
+    window.confirmDeleteAccount = function() {
+      document.getElementById('modalTitle').textContent = 'Delete Your Account?';
+      document.getElementById('modalDesc').textContent  = 'This will permanently delete your account and all associated data. This action CANNOT be undone.';
+      document.getElementById('modalConfirmBtn').onclick = deleteAccount;
+      document.getElementById('confirmModal').classList.add('open');
+    };
+
+    async function deleteAccount() {
+      try {
+        await remove(ref(db, 'Users/' + currentUser.uid));
+        await deleteUser(currentUser);
+        showToast('success', '✅', 'Account deleted');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+      } catch (err) {
+        showToast('error', '❌', 'Failed to delete. Re-login and try again.');
+        closeModal();
+      }
+    }
+
+    /* ── Logout ── */
+    window.handleLogout = function() {
+      signOut(auth).then(() => {
+        window.location.href = 'login.html';
+      });
+    };
+  </script>
+
+  <!-- ============================================================
+       UI SCRIPTS
+  ============================================================ -->
+  <script>
+    /* ── Edit Mode Toggle ── */
+    let editMode = false;
+
+    function toggleEditMode() {
+      editMode = !editMode;
+      const fields  = document.querySelectorAll('.edit-field');
+      const buttons = document.querySelectorAll('.edit-only');
+      const btnText = document.getElementById('editBtnText');
+
+      if (editMode) {
+        fields.forEach(f => f.disabled = false);
+        buttons.forEach(b => b.style.display = 'inline-flex');
+        btnText.textContent = 'Cancel Edit';
+      } else {
+        fields.forEach(f => f.disabled = true);
+        buttons.forEach(b => b.style.display = 'none');
+        btnText.textContent = 'Edit Profile';
+      }
+    }
+
+    /* ── Tariff Slider Sync ── */
+    function updateTariffDisplay(val) {
+      document.getElementById('tariffValueDisplay').textContent = val;
+      document.getElementById('tariffInput').value = val;
+    }
+
+    function syncTariff(val) {
+      const num = parseFloat(val);
+      if (num >= 1 && num <= 15) {
+        document.getElementById('tariffSlider').value = num;
+      }
+      document.getElementById('tariffValueDisplay').textContent = val;
+    }
+
+    /* ── Password Toggle ── */
+    function togglePwd(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    /* ── Sidebar Toggle ── */
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+
+    /* ── Modal ── */
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('open');
+    }
+
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    /* ── Saved Status Flash ── */
+    function showSavedStatus(id) {
+      const el = document.getElementById(id);
+      el.style.display = 'inline-flex';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    /* ── Toast ── */
+    let toastTimer;
+    function showToast(type, icon, msg) {
+      const toast = document.getElementById('toast');
+      toast.className = `toast ${type}`;
+      document.getElementById('toastIcon').textContent = icon;
+      document.getElementById('toastMsg').textContent  = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+  </script>
+
+</body>
+</html>
