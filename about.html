@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0B1120"/>
+  <title>About – Smart Energy Meter</title>
+  <meta name="description" content="Learn about the Smart Energy Meter project, our mission, team, and the technology behind it."/>
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* ============================================================
+       LOADING SCREEN
+    ============================================================ */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+    #loadingScreen.hide { opacity: 0; pointer-events: none; }
+    .loading-logo-wrap { margin-bottom: 20px; }
+    .loading-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(6,182,212,0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ============================================================
+       SIDEBAR & TOPBAR (Same as dashboard)
+    ============================================================ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 15px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .nav-section-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 15px 12px 8px;
+      font-weight: 600;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 15px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.87rem;
+      font-weight: 500;
+      transition: all var(--transition-base);
+      cursor: pointer;
+      position: relative;
+    }
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--primary);
+    }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,245,160,0.05));
+      color: var(--primary);
+      border: 1px solid rgba(6,182,212,0.2);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 60%;
+      background: var(--primary);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+    .sidebar-footer {
+      padding: 15px;
+      border-top: 1px solid var(--border);
+    }
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--bg-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-user-email {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: var(--topbar-height);
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      z-index: 999;
+    }
+    [data-theme="light"] .topbar { background: rgba(255,255,255,0.9); }
+    .topbar-left { display: flex; align-items: center; gap: 15px; }
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .topbar-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+    }
+    .topbar-title i { color: var(--primary); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-btn {
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-base);
+      text-decoration: none;
+    }
+    .topbar-btn:hover {
+      background: rgba(6,182,212,0.1);
+      color: var(--primary);
+      border-color: var(--border-hover);
+    }
+
+    /* ============================================================
+       MAIN CONTENT
+    ============================================================ */
+    .main {
+      margin-left: var(--sidebar-width);
+      margin-top: var(--topbar-height);
+      padding: 25px;
+      min-height: calc(100vh - var(--topbar-height));
+    }
+
+    /* ============================================================
+       HERO SECTION
+    ============================================================ */
+    .about-hero {
+      text-align: center;
+      padding: 60px 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .about-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .about-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: var(--primary);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .about-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+      color: var(--text-primary);
+    }
+    .about-title .highlight {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .about-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.8;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       MISSION CARDS
+    ============================================================ */
+    .mission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 50px;
+    }
+    .mission-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 35px 30px;
+      text-align: center;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .mission-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+    }
+    .mission-card:hover::before { transform: scaleX(1); }
+    .mission-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg);
+    }
+    .mission-icon {
+      width: 70px; height: 70px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 1.8rem;
+      color: var(--bg-primary);
+      box-shadow: var(--glow-primary);
+    }
+    .mission-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    .mission-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       TIMELINE SECTION
+    ============================================================ */
+    .timeline-section {
+      margin-bottom: 50px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .section-tag {
+      display: inline-block;
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: var(--primary);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .section-title .highlight {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      opacity: 0.3;
+    }
+    .timeline-item {
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 50%;
+      position: relative;
+      margin-bottom: 30px;
+    }
+    .timeline-item:nth-child(even) {
+      justify-content: flex-start;
+      padding-right: 0;
+      padding-left: 50%;
+    }
+    .timeline-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 25px;
+      width: 90%;
+      position: relative;
+      transition: all var(--transition-base);
+    }
+    .timeline-content:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+    }
+    .timeline-item:nth-child(odd) .timeline-content { margin-right: 20px; }
+    .timeline-item:nth-child(even) .timeline-content { margin-left: 20px; }
+    .timeline-dot {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px; height: 16px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      border: 3px solid var(--bg-primary);
+      box-shadow: var(--glow-primary);
+      z-index: 2;
+    }
+    .timeline-date {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.8rem;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .timeline-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .timeline-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       TEAM SECTION (Extended)
+    ============================================================ */
+    .team-section { margin-bottom: 50px; }
+    .team-grid-detailed {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 25px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .team-card-detailed {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 30px;
+      text-align: center;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .team-card-detailed::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--gradient-card);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .team-card-detailed:hover::before { opacity: 1; }
+    .team-card-detailed:hover {
+      transform: translateY(-10px);
+      border-color: rgba(6,182,212,0.4);
+      box-shadow: var(--shadow-lg), var(--glow-primary);
+    }
+    .team-avatar-lg {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      position: relative;
+      z-index: 1;
+      border: 4px solid transparent;
+      transition: all 0.4s ease;
+    }
+    .team-card-detailed:hover .team-avatar-lg {
+      transform: scale(1.1) rotate(-5deg);
+      border-color: var(--primary);
+      box-shadow: var(--glow-primary);
+    }
+    .avatar-1 { background: linear-gradient(135deg, #F43F5E, #EC4899); }
+    .avatar-2 { background: linear-gradient(135deg, #10F5A0, #059669); }
+    .avatar-3 { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+    .avatar-4 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+    .avatar-5 { background: linear-gradient(135deg, #06B6D4, #0891B2); }
+    .avatar-6 { background: linear-gradient(135deg, #EC4899, #DB2777); }
+    .avatar-7 { background: linear-gradient(135deg, #22D3EE, #06B6D4); }
+    .team-role-badge {
+      display: inline-block;
+      background: rgba(6,182,212,0.15);
+      border: 1px solid rgba(6,182,212,0.3);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+      font-weight: 600;
+    }
+    .team-role-badge.leader {
+      background: rgba(245,158,11,0.15);
+      border-color: rgba(245,158,11,0.4);
+      color: var(--amber);
+    }
+    .team-name-lg {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+      color: var(--text-primary);
+    }
+    .team-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+    .team-social {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    .team-social a {
+      width: 32px; height: 32px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    .team-social a:hover {
+      background: var(--primary);
+      color: var(--bg-primary);
+      border-color: var(--primary);
+    }
+
+    /* ============================================================
+       FACULTY SECTION
+    ============================================================ */
+    .faculty-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-xl);
+      padding: 50px 30px;
+      margin-bottom: 50px;
+      position: relative;
+      overflow: hidden;
+    }
+    .faculty-section::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+    }
+    .faculty-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .faculty-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      text-align: center;
+      transition: all var(--transition-base);
+    }
+    .faculty-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--purple);
+      box-shadow: 0 10px 30px rgba(139,92,246,0.1);
+    }
+    .faculty-avatar {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #8B5CF6, #EC4899);
+      border-radius: 50%;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 20px rgba(139,92,246,0.3);
+    }
+    .faculty-role {
+      font-size: 0.75rem;
+      color: var(--purple);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .faculty-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .faculty-dept {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       TECH STACK DETAILED
+    ============================================================ */
+    .tech-section { margin-bottom: 50px; }
+    .tech-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    .tech-category {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 25px;
+    }
+    .tech-cat-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+    }
+    .tech-cat-title i { color: var(--primary); }
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tech-item:last-child { border-bottom: none; }
+    .tech-icon-sm {
+      width: 36px; height: 36px;
+      background: var(--bg-hover);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+    .tech-info { flex: 1; }
+    .tech-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .tech-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .dash-footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+    .dash-footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .dash-footer span { color: var(--primary); }
+
+    /* Sidebar overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { left: 0; }
+      .main { margin-left: 0; }
+      .hamburger { display: block; }
+      .timeline::before { left: 20px; }
+      .timeline-item,
+      .timeline-item:nth-child(even) {
+        justify-content: flex-start;
+        padding-left: 50px;
+        padding-right: 0;
+      }
+      .timeline-content { margin-left: 0; margin-right: 0; width: 100%; }
+      .timeline-dot { left: 20px; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen">
+    <div class="loading-logo-wrap" data-logo="animated" data-size="100"></div>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">LOADING...</p>
+  </div>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header" data-logo="full" data-height="38"></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main Menu</span>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-th-large"></i> Overview</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-broadcast-tower"></i> Live Monitor</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-chart-area"></i> Analytics</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+      <span class="nav-section-label">Account</span>
+      <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+      <a class="nav-item active"><i class="fas fa-info-circle"></i> About</a>
+      <a class="nav-item" href="docs.html"><i class="fas fa-book"></i> Docs</a>
+      <a class="nav-item" href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a class="nav-item" onclick="handleLogout()" style="color:var(--danger); cursor:pointer;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">User</div>
+          <div class="sidebar-user-email" id="sidebarEmail">user@email.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <h1 class="topbar-title"><i class="fas fa-info-circle"></i> About Project</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a href="dashboard.html" class="topbar-btn"><i class="fas fa-th-large"></i></a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="about-hero">
+      <div class="about-tag"><i class="fas fa-graduation-cap"></i> Final Year Project</div>
+      <h1 class="about-title">About <span class="highlight">Smart Energy Meter</span></h1>
+      <p class="about-subtitle">
+        An innovative IoT-based solution developed by students of Government Polytechnic College, Sangareddy 
+        to revolutionize energy monitoring and promote sustainable consumption.
+      </p>
+    </section>
+
+    <!-- MISSION CARDS -->
+    <div class="mission-grid">
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-bullseye"></i></div>
+        <h3 class="mission-title">Our Mission</h3>
+        <p class="mission-text">
+          To provide affordable, real-time energy monitoring solutions that empower users to 
+          understand and optimize their electricity consumption, reducing waste and costs.
+        </p>
+      </div>
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-eye"></i></div>
+        <h3 class="mission-title">Our Vision</h3>
+        <p class="mission-text">
+          A future where every home and business has access to smart energy insights, 
+          contributing to a sustainable and energy-efficient world.
+        </p>
+      </div>
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-lightbulb"></i></div>
+        <h3 class="mission-title">The Problem</h3>
+        <p class="mission-text">
+          Traditional energy meters provide no real-time feedback, leading to unchecked 
+          consumption, high bills, and undetected electrical faults that can cause hazards.
+        </p>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <section class="timeline-section">
+      <div class="section-header">
+        <span class="section-tag">Journey</span>
+        <h2 class="section-title">Project <span class="highlight">Timeline</span></h2>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">August 2024</div>
+            <div class="timeline-title">Project Initiation</div>
+            <div class="timeline-desc">Team formation, requirement analysis, and initial planning phase.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">September 2024</div>
+            <div class="timeline-title">Hardware Assembly</div>
+            <div class="timeline-desc">ESP32 programming, sensor calibration, and circuit design.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">October 2024</div>
+            <div class="timeline-title">Cloud Integration</div>
+            <div class="timeline-desc">Firebase setup, Blynk IoT configuration, and real-time data sync.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">November 2024</div>
+            <div class="timeline-title">Dashboard Development</div>
+            <div class="timeline-desc">Web interface design, chart implementation, and responsive UI.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">December 2024</div>
+            <div class="timeline-title">Testing & Deployment</div>
+            <div class="timeline-desc">Field testing, bug fixes, and final deployment on Netlify.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="team-section">
+      <div class="section-header">
+        <span class="section-tag">The Team</span>
+        <h2 class="section-title">Meet The <span class="highlight">Team</span></h2>
+      </div>
+      <div class="team-grid-detailed">
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-1">👩</div>
+          <div class="team-role-badge leader">⭐ Team Leader</div>
+          <div class="team-name-lg">Srilaxmi</div>
+          <div class="team-desc">Project Lead & Coordinator<br/>Overseeing project execution and team management.</div>
+          <div class="team-social">
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-5">👨‍💻</div>
+          <div class="team-role-badge">💻 Web Designer</div>
+          <div class="team-name-lg">Om Pandey</div>
+          <div class="team-desc">Full Stack Developer<br/>Website architecture, Firebase integration, and UI/UX design.</div>
+          <div class="team-social">
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-2">👩</div>
+          <div class="team-role-badge">⚡ Vice Leader</div>
+          <div class="team-name-lg">Varshitha</div>
+          <div class="team-desc">Hardware Specialist<br/>Circuit design and sensor integration expert.</div>
+          <div class="team-social">
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-4">👨</div>
+          <div class="team-role-badge">🔧 Hardware Lead</div>
+          <div class="team-name-lg">Mouryavardhan</div>
+          <div class="team-desc">IoT Engineer<br/>ESP32 programming and Blynk IoT configuration.</div>
+          <div class="team-social">
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-3">👩</div>
+          <div class="team-role-badge">📊 Documentation</div>
+          <div class="team-name-lg">Akshitha</div>
+          <div class="team-desc">Technical Writer<br/>Project documentation and reporting.</div>
+          <div class="team-social">
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-6">👩</div>
+          <div class="team-role-badge">🎤 Presentation</div>
+          <div class="team-name-lg">Manyatha</div>
+          <div class="team-desc">Presentation Lead<br/>PPT creation and demo preparation.</div>
+          <div class="team-social">
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="team-card-detailed">
+          <div class="team-avatar-lg avatar-7">👨</div>
+          <div class="team-role-badge">🔬 Research</div>
+          <div class="team-name-lg">Shiva Sai</div>
+          <div class="team-desc">Research Analyst<br/>Market research and component sourcing.</div>
+          <div class="team-social">
+            <a href="#"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FACULTY -->
+    <section class="faculty-section">
+      <div class="section-header">
+        <span class="section-tag">Guidance</span>
+        <h2 class="section-title">Project <span class="highlight">Mentors</span></h2>
+      </div>
+      <div class="faculty-grid">
+        <div class="faculty-card">
+          <div class="faculty-avatar">👨‍🏫</div>
+          <div class="faculty-role">Project Guide</div>
+          <div class="faculty-name">Mr. [Faculty Name]</div>
+          <div class="faculty-dept">Department of Electrical Engineering<br/>Government Polytechnic College, Sangareddy</div>
+        </div>
+        <div class="faculty-card">
+          <div class="faculty-avatar">👩‍🏫</div>
+          <div class="faculty-role">HOD</div>
+          <div class="faculty-name">Mr. [HOD Name]</div>
+          <div class="faculty-dept">Head of Department<br/>Electrical Engineering</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section class="tech-section">
+      <div class="section-header">
+        <span class="section-tag">Technology</span>
+        <h2 class="section-title">Tech <span class="highlight">Stack</span></h2>
+      </div>
+      <div class="tech-categories">
+        <div class="tech-category">
+          <h3 class="tech-cat-title"><i class="fas fa-microchip"></i> Hardware</h3>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-microchip"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">ESP32</div>
+              <div class="tech-desc">Main microcontroller with WiFi/BT</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-bolt"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">ZMCT103C</div>
+              <div class="tech-desc">Current sensor module</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-plug"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">ZMPT101B</div>
+              <div class="tech-desc">Voltage sensor module</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-category">
+          <h3 class="tech-cat-title"><i class="fas fa-cloud"></i> Cloud & IoT</h3>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-fire"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">Firebase</div>
+              <div class="tech-desc">Realtime Database & Auth</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fab fa-bluetooth"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">Blynk IoT</div>
+              <div class="tech-desc">Device communication platform</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-server"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">Netlify</div>
+              <div class="tech-desc">Web hosting & deployment</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-category">
+          <h3 class="tech-cat-title"><i class="fas fa-code"></i> Frontend</h3>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fab fa-html5"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">HTML5 & CSS3</div>
+              <div class="tech-desc">Structure and styling</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fab fa-js"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">JavaScript</div>
+              <div class="tech-desc">Dynamic functionality</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon-sm"><i class="fas fa-chart-bar"></i></div>
+            <div class="tech-info">
+              <div class="tech-name">Chart.js</div>
+              <div class="tech-desc">Data visualization</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="dash-footer">
+      <p>© 2025 <span>Smart Energy Meter</span> · Government Polytechnic College, Sangareddy · Designed by <span>Om Pandey</span></p>
+    </div>
+
+  </main>
+
+  <!-- SCRIPTS -->
+  <script src="js/theme.js"></script>
+  <script src="js/logo.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
+      authDomain: "smartenergymeter-dd01b.firebaseapp.com",
+      projectId: "smartenergymeter-dd01b",
+      storageBucket: "smartenergymeter-dd01b.firebasestorage.app",
+      messagingSenderId: "299635627523",
+      appId: "1:299635627523:web:fd8375e25803015e0de036"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const name = user.displayName || 'User';
+        const email = user.email || '';
+        document.getElementById('sidebarName').textContent = name;
+        document.getElementById('sidebarEmail').textContent = email;
+        document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+      }
+      setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hide');
+      }, 600);
+    });
+    
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'login.html'; });
+    };
+  </script>
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+  </script>
+</body>
+</html>

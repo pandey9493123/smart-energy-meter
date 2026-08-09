@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0B1120"/>
+  <title>404 - Circuit Broken | Smart Energy Meter</title>
+  <meta name="description" content="Oops! This page doesn't exist. Return to the Smart Energy Meter homepage."/>
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* ============================================================
+       PAGE LAYOUT
+    ============================================================ */
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(6,182,212,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes gridMove {
+      100% { transform: translateY(60px); }
+    }
+
+    /* Glow blobs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50%     { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* ============================================================
+       THEME TOGGLE (top right)
+    ============================================================ */
+    .top-right-toggle {
+      position: fixed;
+      top: 25px; right: 25px;
+      z-index: 10;
+    }
+
+    /* ============================================================
+       BACK HOME (top left)
+    ============================================================ */
+    .top-left-brand {
+      position: fixed;
+      top: 25px; left: 25px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: color 0.3s ease;
+    }
+    .top-left-brand:hover { color: var(--primary); }
+
+    /* ============================================================
+       MAIN CONTAINER
+    ============================================================ */
+    .error-container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    /* ============================================================
+       404 BIG NUMBER (SVG animated)
+    ============================================================ */
+    .error-visual {
+      position: relative;
+      margin: 0 auto 30px;
+      width: 320px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-number {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(6rem, 20vw, 10rem);
+      font-weight: 900;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      letter-spacing: -5px;
+      position: relative;
+      z-index: 2;
+      animation: glitch 3s ease infinite;
+    }
+
+    @keyframes glitch {
+      0%, 90%, 100% {
+        transform: translate(0);
+        filter: drop-shadow(0 0 20px rgba(6,182,212,0.5));
+      }
+      92% {
+        transform: translate(-3px, 2px);
+        filter: drop-shadow(3px 0 0 rgba(244,63,94,0.7)) drop-shadow(-3px 0 0 rgba(6,182,212,0.7));
+      }
+      94% {
+        transform: translate(3px, -1px);
+        filter: drop-shadow(-3px 0 0 rgba(16,245,160,0.7));
+      }
+      96% {
+        transform: translate(-2px, 1px);
+      }
+    }
+
+    /* Broken circuit SVG */
+    .broken-circuit {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      opacity: 0.5;
+    }
+
+    .broken-circuit svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating sparks */
+    .spark {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: var(--amber);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--amber);
+      animation: sparkFloat 3s ease-in-out infinite;
+    }
+    .spark:nth-child(1) { top: 20%;  left: 15%; animation-delay: 0s; }
+    .spark:nth-child(2) { top: 60%;  left: 85%; animation-delay: 0.5s; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .spark:nth-child(3) { top: 40%;  left: 10%; animation-delay: 1s; background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+    .spark:nth-child(4) { top: 80%;  left: 75%; animation-delay: 1.5s; background: var(--rose); box-shadow: 0 0 10px var(--rose); }
+    .spark:nth-child(5) { top: 30%;  left: 90%; animation-delay: 2s; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+    .spark:nth-child(6) { top: 70%;  left: 20%; animation-delay: 2.5s; background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+
+    @keyframes sparkFloat {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0;
+      }
+      50% {
+        transform: translateY(-30px) scale(1.5);
+        opacity: 1;
+      }
+    }
+
+    /* ============================================================
+       TITLE & MESSAGE
+    ============================================================ */
+    .error-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.25);
+      color: var(--danger);
+      padding: 6px 16px;
+      border-radius: 25px;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .error-tag i {
+      animation: shake 0.5s ease infinite;
+    }
+    @keyframes shake {
+      0%, 100% { transform: rotate(0); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+
+    .error-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    .error-title .highlight {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .error-desc {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 30px;
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: var(--bg-primary);
+      box-shadow: var(--glow-primary);
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow-primary-lg);
+    }
+
+    .btn-secondary {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ============================================================
+       POPULAR LINKS
+    ============================================================ */
+    .popular-links {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 25px;
+      margin-top: 20px;
+    }
+    .popular-links h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+    .popular-links h3 i { color: var(--accent); }
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: all var(--transition-base);
+    }
+    .link-card i {
+      font-size: 1.2rem;
+      color: var(--primary);
+      transition: transform 0.3s ease;
+    }
+    .link-card:hover {
+      border-color: var(--border-hover);
+      color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .link-card:hover i {
+      transform: scale(1.2);
+    }
+
+    /* ============================================================
+       BOTTOM FOOTER MESSAGE
+    ============================================================ */
+    .footer-msg {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      z-index: 5;
+      text-align: center;
+    }
+    .footer-msg span { color: var(--primary); }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 480px) {
+      .top-left-brand span { display: none; }
+      .error-actions { flex-direction: column; width: 100%; max-width: 280px; margin-left: auto; margin-right: auto; }
+      .btn { width: 100%; }
+      .error-visual { width: 280px; height: 180px; }
+      .links-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP LEFT: Back to home -->
+  <a href="index.html" class="top-left-brand">
+    <div data-logo="icon" data-size="32"></div>
+    <span>Smart Energy Meter</span>
+  </a>
+
+  <!-- TOP RIGHT: Theme toggle -->
+  <div class="top-right-toggle">
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="error-container">
+
+    <!-- 404 Visual with sparks -->
+    <div class="error-visual">
+      <!-- Floating sparks -->
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+
+      <!-- Broken circuit SVG background -->
+      <div class="broken-circuit">
+        <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.4"/>
+              <stop offset="45%" stop-color="#06B6D4" stop-opacity="0.4"/>
+              <stop offset="50%" stop-color="#F43F5E" stop-opacity="0.7"/>
+              <stop offset="55%" stop-color="#06B6D4" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#10F5A0" stop-opacity="0.4"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Left wire -->
+          <path d="M 20 100 L 170 100" stroke="url(#wireGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- Broken zigzag -->
+          <path d="M 170 100 L 180 90 L 190 110 L 200 100" stroke="#F43F5E" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6">
+            <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
+          </path>
+
+          <!-- Right wire -->
+          <path d="M 230 100 L 380 100" stroke="url(#wireGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- End nodes -->
+          <circle cx="20" cy="100" r="6" fill="#06B6D4" opacity="0.8"/>
+          <circle cx="380" cy="100" r="6" fill="#10F5A0" opacity="0.8"/>
+
+          <!-- Warning triangle above break -->
+          <g transform="translate(200, 60)">
+            <path d="M 0 -18 L 15 12 L -15 12 Z" fill="#F43F5E" opacity="0.8"/>
+            <text x="0" y="7" text-anchor="middle" font-size="14" font-weight="900" fill="white">!</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Big 404 -->
+      <div class="error-number">404</div>
+    </div>
+
+    <!-- Error tag -->
+    <div class="error-tag">
+      <i class="fas fa-exclamation-triangle"></i>
+      Circuit Broken
+    </div>
+
+    <!-- Title -->
+    <h1 class="error-title">
+      Oops! Page <span class="highlight">Not Found</span>
+    </h1>
+
+    <!-- Description -->
+    <p class="error-desc">
+      Looks like this page got disconnected from our circuit! The URL you're looking for
+      doesn't exist, was moved, or may have blown a fuse ⚡
+    </p>
+
+    <!-- Action buttons -->
+    <div class="error-actions">
+      <a href="index.html" class="btn btn-primary">
+        <i class="fas fa-home"></i>
+        Back to Home
+      </a>
+      <button onclick="history.back()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Go Back
+      </button>
+    </div>
+
+    <!-- Popular links -->
+    <div class="popular-links">
+      <h3><i class="fas fa-compass"></i> Popular Destinations</h3>
+      <div class="links-grid">
+        <a href="dashboard.html" class="link-card">
+          <i class="fas fa-th-large"></i>
+          Dashboard
+        </a>
+        <a href="login.html" class="link-card">
+          <i class="fas fa-sign-in-alt"></i>
+          Login
+        </a>
+        <a href="signup.html" class="link-card">
+          <i class="fas fa-user-plus"></i>
+          Sign Up
+        </a>
+        <a href="about.html" class="link-card">
+          <i class="fas fa-info-circle"></i>
+          About
+        </a>
+        <a href="docs.html" class="link-card">
+          <i class="fas fa-book"></i>
+          Documentation
+        </a>
+        <a href="profile.html" class="link-card">
+          <i class="fas fa-user"></i>
+          Profile
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer message -->
+  <div class="footer-msg">
+    © 2025 <span>Smart Energy Meter</span> · GPC Sangareddy
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/theme.js"></script>
+  <script src="js/logo.js"></script>
+</body>
+</html>

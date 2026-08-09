@@ -1,66 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0B1120"/>
   <title>Dashboard – Smart Energy Meter</title>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-
-  <!-- Font Awesome -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="stylesheet" href="css/theme.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- html2pdf & PapaParse (for export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
   <style>
-    /* ============================================================
-       ROOT VARIABLES
-    ============================================================ */
-    :root {
-      --bg-primary:    #0A1628;
-      --bg-secondary:  #112240;
-      --bg-card:       rgba(17, 34, 64, 0.85);
-      --bg-sidebar:    #0D1B2A;
-      --blue-primary:  #00B4D8;
-      --blue-deep:     #0077B6;
-      --green-neon:    #00FF88;
-      --amber:         #FFB703;
-      --red-alert:     #FF4444;
-      --purple:        #A855F7;
-      --pink:          #FF6B9D;
-      --text-primary:  #FFFFFF;
-      --text-secondary:#CBD5E1;
-      --text-muted:    #64748B;
-      --border:        rgba(0, 180, 216, 0.15);
-      --glow-blue:     0 0 20px rgba(0, 180, 216, 0.4);
-      --glow-green:    0 0 20px rgba(0, 255, 136, 0.4);
-      --sidebar-width: 260px;
-      --topbar-height: 65px;
-    }
-
-    /* ============================================================
-       RESET & BASE
-    ============================================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: var(--blue-primary); border-radius: 3px; }
-
     /* ============================================================
        LOADING SCREEN
     ============================================================ */
@@ -75,37 +32,17 @@
       justify-content: center;
       transition: opacity 0.5s ease;
     }
-
-    #loadingScreen.hide {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-logo {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, #00B4D8, #00FF88);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 25px;
-    }
-
+    #loadingScreen.hide { opacity: 0; pointer-events: none; }
+    .loading-logo-wrap { margin-bottom: 20px; }
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(0,180,216,0.2);
-      border-top-color: var(--blue-primary);
+      width: 40px; height: 40px;
+      border: 3px solid rgba(6,182,212,0.2);
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-bottom: 15px;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text {
       font-size: 0.8rem;
       color: var(--text-muted);
@@ -117,8 +54,7 @@
     ============================================================ */
     .sidebar {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: var(--sidebar-width);
       height: 100vh;
       background: var(--bg-sidebar);
@@ -129,129 +65,91 @@
       transition: transform 0.3s ease;
       overflow-y: auto;
     }
-
     .sidebar-header {
-      padding: 20px;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .sidebar-logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-      color: var(--bg-primary);
-      flex-shrink: 0;
     }
-
-    .sidebar-logo-text {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #00B4D8, #00FF88);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
     .sidebar-nav {
       flex: 1;
       padding: 15px 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
-
     .nav-section-label {
       font-size: 0.65rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 2px;
       padding: 15px 12px 8px;
+      font-weight: 600;
     }
-
     .nav-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 11px 15px;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.87rem;
       font-weight: 500;
-      transition: all 0.3s ease;
+      transition: all var(--transition-base);
       cursor: pointer;
       position: relative;
     }
-
     .nav-item:hover {
-      background: rgba(0,180,216,0.08);
-      color: var(--blue-primary);
+      background: var(--bg-hover);
+      color: var(--primary);
     }
-
     .nav-item.active {
-      background: linear-gradient(135deg, rgba(0,180,216,0.15), rgba(0,255,136,0.05));
-      color: var(--blue-primary);
-      border: 1px solid rgba(0,180,216,0.2);
+      background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,245,160,0.05));
+      color: var(--primary);
+      border: 1px solid rgba(6,182,212,0.2);
     }
-
     .nav-item.active::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 50%;
+      left: 0; top: 50%;
       transform: translateY(-50%);
-      width: 3px;
-      height: 60%;
-      background: var(--blue-primary);
+      width: 3px; height: 60%;
+      background: var(--primary);
       border-radius: 0 3px 3px 0;
     }
-
     .nav-item i {
       width: 20px;
       text-align: center;
       font-size: 1rem;
     }
-
     .nav-badge {
       margin-left: auto;
-      background: var(--red-alert);
+      background: var(--danger);
       color: white;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       padding: 2px 7px;
       border-radius: 10px;
-      font-weight: 600;
+      font-weight: 700;
     }
-
-    /* Sidebar footer */
     .sidebar-footer {
       padding: 15px;
       border-top: 1px solid var(--border);
     }
-
     .sidebar-user {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 10px;
-      border-radius: 10px;
-      background: rgba(0,180,216,0.05);
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
       border: 1px solid var(--border);
     }
-
     .sidebar-avatar {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      background: var(--gradient-primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -259,21 +157,21 @@
       color: var(--bg-primary);
       font-weight: 700;
       flex-shrink: 0;
+      overflow: hidden;
     }
-
-    .sidebar-user-info {
-      flex: 1;
-      min-width: 0;
+    .sidebar-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
     }
-
+    .sidebar-user-info { flex: 1; min-width: 0; }
     .sidebar-user-name {
       font-size: 0.82rem;
       font-weight: 600;
+      color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .sidebar-user-email {
       font-size: 0.68rem;
       color: var(--text-muted);
@@ -291,7 +189,7 @@
       left: var(--sidebar-width);
       right: 0;
       height: var(--topbar-height);
-      background: rgba(10, 22, 40, 0.95);
+      background: rgba(11, 17, 32, 0.85);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -300,13 +198,14 @@
       padding: 0 25px;
       z-index: 999;
     }
-
+    [data-theme="light"] .topbar {
+      background: rgba(255, 255, 255, 0.9);
+    }
     .topbar-left {
       display: flex;
       align-items: center;
       gap: 15px;
     }
-
     .hamburger {
       display: none;
       background: none;
@@ -316,103 +215,84 @@
       cursor: pointer;
       padding: 5px;
     }
-
     .topbar-greeting {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
     }
-
-    .topbar-greeting strong {
-      color: var(--text-primary);
-    }
-
+    .topbar-greeting strong { color: var(--text-primary); }
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
-
-    /* Device status */
     .device-status {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0,255,136,0.08);
-      border: 1px solid rgba(0,255,136,0.2);
+      background: rgba(16,245,160,0.08);
+      border: 1px solid rgba(16,245,160,0.2);
       padding: 5px 12px;
       border-radius: 20px;
-      font-size: 0.75rem;
-      color: var(--green-neon);
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 500;
     }
-
     .device-status.offline {
-      background: rgba(255,68,68,0.08);
-      border-color: rgba(255,68,68,0.2);
-      color: var(--red-alert);
+      background: rgba(244,63,94,0.08);
+      border-color: rgba(244,63,94,0.2);
+      color: var(--danger);
     }
-
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 7px; height: 7px;
       border-radius: 50%;
-      background: var(--green-neon);
+      background: var(--accent);
       animation: pulse 1.5s ease infinite;
     }
-
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
+      0%,100% { opacity: 1; }
+      50%     { opacity: 0.4; }
     }
-
     .device-status.offline .status-dot {
-      background: var(--red-alert);
+      background: var(--danger);
       animation: none;
     }
-
-    /* Topbar buttons */
     .topbar-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.05);
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
       border: 1px solid var(--border);
       color: var(--text-secondary);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      transition: all var(--transition-base);
       position: relative;
+      text-decoration: none;
     }
-
     .topbar-btn:hover {
-      background: rgba(0,180,216,0.1);
-      color: var(--blue-primary);
-      border-color: rgba(0,180,216,0.3);
+      background: rgba(6,182,212,0.1);
+      color: var(--primary);
+      border-color: var(--border-hover);
     }
-
-    .topbar-btn .notif-badge {
+    .notif-badge {
       position: absolute;
-      top: -3px;
-      right: -3px;
-      width: 16px;
-      height: 16px;
-      background: var(--red-alert);
+      top: -3px; right: -3px;
+      width: 16px; height: 16px;
+      background: var(--danger);
       border-radius: 50%;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-weight: 700;
     }
-
     .topbar-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--blue-primary), var(--green-neon));
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--gradient-primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -422,11 +302,14 @@
       cursor: pointer;
       border: 2px solid transparent;
       transition: border-color 0.3s ease;
+      text-decoration: none;
+      overflow: hidden;
     }
-
-    .topbar-avatar:hover {
-      border-color: var(--blue-primary);
+    .topbar-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
     }
+    .topbar-avatar:hover { border-color: var(--primary); }
 
     /* ============================================================
        MAIN CONTENT
@@ -439,192 +322,665 @@
     }
 
     /* ============================================================
-       FAULT ALERT BANNER
+       FAULT BANNER
     ============================================================ */
     .fault-banner {
       display: none;
-      background: linear-gradient(135deg, rgba(255,68,68,0.15), rgba(255,68,68,0.05));
-      border: 1px solid rgba(255,68,68,0.3);
-      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.05));
+      border: 1px solid rgba(244,63,94,0.3);
+      border-radius: var(--radius-lg);
       padding: 14px 20px;
       margin-bottom: 20px;
       align-items: center;
       gap: 12px;
       animation: faultPulse 2s ease-in-out infinite;
     }
-
-    .fault-banner.show {
-      display: flex;
-    }
-
+    .fault-banner.show { display: flex; }
     @keyframes faultPulse {
-      0%, 100% { border-color: rgba(255,68,68,0.3); }
-      50%       { border-color: rgba(255,68,68,0.8); box-shadow: 0 0 20px rgba(255,68,68,0.2); }
+      0%,100% { border-color: rgba(244,63,94,0.3); }
+      50%     { border-color: rgba(244,63,94,0.8); box-shadow: 0 0 20px rgba(244,63,94,0.2); }
     }
-
     .fault-icon {
-      width: 40px;
-      height: 40px;
-      background: rgba(255,68,68,0.15);
-      border-radius: 10px;
+      width: 40px; height: 40px;
+      background: rgba(244,63,94,0.15);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--red-alert);
+      color: var(--danger);
       font-size: 1.2rem;
       flex-shrink: 0;
     }
-
     .fault-text h4 {
       font-size: 0.88rem;
-      color: var(--red-alert);
+      color: var(--danger);
       margin-bottom: 2px;
     }
-
     .fault-text p {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
     }
 
     /* ============================================================
-       STATS CARDS ROW
+       QUICK ACTIONS BAR (NEW)
+    ============================================================ */
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .actions-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .actions-title i { color: var(--primary); }
+    .actions-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      padding: 8px 14px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .action-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .action-btn.primary {
+      background: var(--gradient-primary);
+      color: var(--bg-primary);
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .action-btn.primary:hover {
+      color: var(--bg-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--glow-primary);
+    }
+
+    /* ============================================================
+       STAT CARDS (Main 4)
     ============================================================ */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 18px;
-      margin-bottom: 22px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
     }
-
     .stat-card {
       background: var(--bg-card);
       backdrop-filter: blur(15px);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 20px;
+      border-radius: var(--radius-lg);
+      padding: 20px 18px;
       position: relative;
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: all var(--transition-base);
     }
-
     .stat-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(0,180,216,0.3);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg);
     }
-
     .stat-card::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
+      bottom: 0; left: 0;
+      width: 100%; height: 3px;
     }
-
-    .stat-card.voltage::after  { background: var(--blue-primary); box-shadow: 0 0 8px var(--blue-primary); }
-    .stat-card.current::after  { background: var(--green-neon);   box-shadow: 0 0 8px var(--green-neon); }
-    .stat-card.power::after    { background: var(--amber);        box-shadow: 0 0 8px var(--amber); }
-    .stat-card.energy::after   { background: var(--purple);       box-shadow: 0 0 8px var(--purple); }
-
+    .stat-card.voltage::after  { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
+    .stat-card.current::after  { background: var(--accent);  box-shadow: 0 0 8px var(--accent); }
+    .stat-card.power::after    { background: var(--amber);   box-shadow: 0 0 8px var(--amber); }
+    .stat-card.energy::after   { background: var(--purple);  box-shadow: 0 0 8px var(--purple); }
     .stat-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 15px;
     }
-
     .stat-label {
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1px;
+      font-weight: 600;
     }
-
     .stat-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
-
-    .stat-card.voltage .stat-icon { background: rgba(0,180,216,0.12); color: var(--blue-primary); }
-    .stat-card.current .stat-icon { background: rgba(0,255,136,0.12); color: var(--green-neon); }
-    .stat-card.power   .stat-icon { background: rgba(255,183,3,0.12); color: var(--amber); }
-    .stat-card.energy  .stat-icon { background: rgba(168,85,247,0.12); color: var(--purple); }
-
+    .stat-card.voltage .stat-icon { background: rgba(6,182,212,0.15);  color: var(--primary); }
+    .stat-card.current .stat-icon { background: rgba(16,245,160,0.15); color: var(--accent); }
+    .stat-card.power   .stat-icon { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .stat-card.energy  .stat-icon { background: rgba(139,92,246,0.15); color: var(--purple); }
     .stat-value {
       font-family: 'Orbitron', sans-serif;
-      font-size: 2rem;
+      font-size: 1.9rem;
       font-weight: 700;
       line-height: 1;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
-
-    .stat-card.voltage .stat-value { color: var(--blue-primary); }
-    .stat-card.current .stat-value { color: var(--green-neon); }
+    .stat-card.voltage .stat-value { color: var(--primary); }
+    .stat-card.current .stat-value { color: var(--accent); }
     .stat-card.power   .stat-value { color: var(--amber); }
     .stat-card.energy  .stat-value { color: var(--purple); }
-
     .stat-unit {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       font-family: 'Poppins', sans-serif;
     }
-
     .stat-live {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-size: 0.68rem;
-      color: var(--green-neon);
-      background: rgba(0,255,136,0.08);
+      font-size: 0.65rem;
+      color: var(--accent);
+      background: rgba(16,245,160,0.08);
       padding: 2px 8px;
       border-radius: 8px;
+      font-weight: 500;
     }
-
     .stat-live-dot {
-      width: 5px;
-      height: 5px;
-      background: var(--green-neon);
+      width: 5px; height: 5px;
+      background: var(--accent);
       border-radius: 50%;
       animation: pulse 1.5s ease infinite;
     }
 
     /* ============================================================
-       SECONDARY STATS (BILL + RELAY + FAULT)
+       SECONDARY GRID (Bill + Relay + Fault)
     ============================================================ */
     .secondary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
-      margin-bottom: 22px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
-
     .info-card {
       background: var(--bg-card);
       backdrop-filter: blur(15px);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 20px;
-      transition: all 0.3s ease;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: all var(--transition-base);
     }
-
-    .info-card:hover {
-      border-color: rgba(0,180,216,0.3);
-    }
-
+    .info-card:hover { border-color: var(--border-hover); }
     .info-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 15px;
     }
-
     .info-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-card-title i { color: var(--primary); }
+
+    /* Bill */
+    .bill-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .bill-item {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+    }
+    .bill-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .bill-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--pink);
+    }
+    .bill-value.tariff { color: var(--amber); }
+
+    /* Relay */
+    .relay-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 13px 16px;
+      margin-bottom: 12px;
+    }
+    .relay-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .relay-indicator {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--danger);
+      transition: background 0.3s ease;
+    }
+    .relay-indicator.on {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .relay-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .relay-state {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .relay-state.on  { color: var(--accent); }
+    .relay-state.off { color: var(--danger); }
+    .toggle-switch {
+      position: relative;
+      width: 52px; height: 28px;
+      cursor: pointer;
+    }
+    .toggle-switch input { display: none; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(244,63,94,0.3);
+      border-radius: 28px;
+      border: 1px solid rgba(244,63,94,0.3);
+      transition: all 0.3s ease;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: var(--danger);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background: rgba(16,245,160,0.2);
+      border-color: rgba(16,245,160,0.4);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(24px);
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .toggle-row span {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+    }
+    .relay-note {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Fault Status */
+    .fault-status-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(16,245,160,0.05);
+      border: 1px solid rgba(16,245,160,0.15);
+      border-radius: var(--radius-md);
+      padding: 13px 16px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+    .fault-status-box.alert {
+      background: rgba(244,63,94,0.08);
+      border-color: rgba(244,63,94,0.3);
+      animation: faultPulse 2s ease-in-out infinite;
+    }
+    .fault-status-icon {
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .fault-status-box:not(.alert) .fault-status-icon {
+      background: rgba(16,245,160,0.15);
+      color: var(--accent);
+    }
+    .fault-status-box.alert .fault-status-icon {
+      background: rgba(244,63,94,0.15);
+      color: var(--danger);
+    }
+    .fault-status-text h4 {
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+    .fault-status-box:not(.alert) .fault-status-text h4 { color: var(--accent); }
+    .fault-status-box.alert .fault-status-text h4 { color: var(--danger); }
+    .fault-status-text p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .fault-history-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .fault-log {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .fault-log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      background: var(--bg-hover);
+      border-radius: 6px;
+    }
+    .fault-log-item .log-time { color: var(--text-muted); }
+    .fault-log-item .log-status {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.62rem;
+      font-weight: 600;
+    }
+    .fault-log-item .log-status.fault {
+      background: rgba(244,63,94,0.15);
+      color: var(--danger);
+    }
+    .fault-log-item .log-status.normal {
+      background: rgba(16,245,160,0.1);
+      color: var(--accent);
+    }
+
+    /* ============================================================
+       NEW WIDGETS ROW (Goal + Tips + Comparison)
+    ============================================================ */
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Goal Tracker Widget */
+    .goal-widget .info-card-title i { color: var(--purple); }
+    .goal-progress-wrap {
+      background: var(--bg-hover);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      margin-bottom: 12px;
+    }
+    .goal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .goal-current {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--purple);
+    }
+    .goal-target {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-royal);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .progress-fill.warning { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+    .progress-fill.danger  { background: linear-gradient(90deg, var(--danger), var(--rose)); }
+    .progress-percent {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .goal-input-wrap {
+      display: flex;
+      gap: 8px;
+    }
+    .goal-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .goal-input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+    }
+    .goal-save-btn {
+      padding: 8px 14px;
+      background: var(--purple);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .goal-save-btn:hover {
+      background: var(--purple-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Saving Tips Widget */
+    .tips-widget .info-card-title i { color: var(--amber); }
+    .tip-box {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02));
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 100px;
+    }
+    .tip-icon {
+      width: 34px; height: 34px;
+      background: rgba(245,158,11,0.15);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--amber);
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .tip-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .tip-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    .tip-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .tip-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      transition: background 0.3s ease;
+    }
+    .tip-dot.active { background: var(--amber); }
+    .tip-next-btn {
+      background: none;
+      border: none;
+      color: var(--amber);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: opacity 0.3s ease;
+    }
+    .tip-next-btn:hover { opacity: 0.7; }
+
+    /* Comparison Widget */
+    .compare-widget .info-card-title i { color: var(--primary); }
+    .compare-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .compare-item:last-child { margin-bottom: 0; }
+    .compare-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .compare-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .compare-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .compare-change {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .compare-change.up {
+      background: rgba(244,63,94,0.1);
+      color: var(--danger);
+    }
+    .compare-change.down {
+      background: rgba(16,245,160,0.1);
+      color: var(--accent);
+    }
+    .compare-change.same {
+      background: var(--bg-hover);
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       CHARTS
+    ============================================================ */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .chart-title {
       font-family: 'Orbitron', sans-serif;
       font-size: 0.85rem;
       font-weight: 700;
@@ -633,307 +989,33 @@
       align-items: center;
       gap: 8px;
     }
-
-    .info-card-title i {
-      color: var(--blue-primary);
-    }
-
-    /* Bill card */
-    .bill-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .bill-item {
-      background: rgba(0,180,216,0.05);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .bill-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .bill-value {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--pink);
-    }
-
-    .bill-value.tariff {
-      color: var(--amber);
-    }
-
-    /* Relay card */
-    .relay-status {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(0,180,216,0.05);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 15px 18px;
-      margin-bottom: 12px;
-    }
-
-    .relay-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .relay-indicator {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--red-alert);
-      transition: background 0.3s ease;
-    }
-
-    .relay-indicator.on {
-      background: var(--green-neon);
-      box-shadow: 0 0 10px var(--green-neon);
-    }
-
-    .relay-label {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-    }
-
-    .relay-state {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.75rem;
-      letter-spacing: 1px;
-    }
-
-    .relay-state.on  { color: var(--green-neon); }
-    .relay-state.off { color: var(--red-alert); }
-
-    /* Toggle switch */
-    .toggle-switch {
-      position: relative;
-      width: 52px;
-      height: 28px;
-      cursor: pointer;
-    }
-
-    .toggle-switch input {
-      display: none;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      inset: 0;
-      background: rgba(255,68,68,0.3);
-      border-radius: 28px;
-      border: 1px solid rgba(255,68,68,0.3);
-      transition: all 0.3s ease;
-    }
-
-    .toggle-slider::before {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 20px;
-      height: 20px;
-      background: var(--red-alert);
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-
-    .toggle-switch input:checked + .toggle-slider {
-      background: rgba(0,255,136,0.2);
-      border-color: rgba(0,255,136,0.4);
-    }
-
-    .toggle-switch input:checked + .toggle-slider::before {
-      transform: translateX(24px);
-      background: var(--green-neon);
-      box-shadow: 0 0 10px var(--green-neon);
-    }
-
-    .relay-note {
-      font-size: 0.73rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    /* Fault status card */
-    .fault-status-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(0,255,136,0.05);
-      border: 1px solid rgba(0,255,136,0.15);
-      border-radius: 12px;
-      padding: 15px 18px;
-      margin-bottom: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .fault-status-box.alert {
-      background: rgba(255,68,68,0.08);
-      border-color: rgba(255,68,68,0.3);
-      animation: faultPulse 2s ease-in-out infinite;
-    }
-
-    .fault-status-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-    }
-
-    .fault-status-box:not(.alert) .fault-status-icon {
-      background: rgba(0,255,136,0.12);
-      color: var(--green-neon);
-    }
-
-    .fault-status-box.alert .fault-status-icon {
-      background: rgba(255,68,68,0.15);
-      color: var(--red-alert);
-    }
-
-    .fault-status-text h4 {
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    .fault-status-box:not(.alert) .fault-status-text h4 { color: var(--green-neon); }
-    .fault-status-box.alert .fault-status-text h4 { color: var(--red-alert); }
-
-    .fault-status-text p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .fault-history-title {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      margin-top: 5px;
-    }
-
-    .fault-log {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 100px;
-      overflow-y: auto;
-    }
-
-    .fault-log-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.73rem;
-      padding: 5px 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 6px;
-    }
-
-    .fault-log-item .log-time {
-      color: var(--text-muted);
-    }
-
-    .fault-log-item .log-status {
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      font-weight: 600;
-    }
-
-    .fault-log-item .log-status.fault {
-      background: rgba(255,68,68,0.15);
-      color: var(--red-alert);
-    }
-
-    .fault-log-item .log-status.normal {
-      background: rgba(0,255,136,0.1);
-      color: var(--green-neon);
-    }
-
-    /* ============================================================
-       CHARTS ROW
-    ============================================================ */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 18px;
-      margin-bottom: 22px;
-    }
-
-    .chart-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(15px);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 20px;
-    }
-
-    .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
-
-    .chart-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .chart-title i {
-      color: var(--blue-primary);
-    }
-
+    .chart-title i { color: var(--primary); }
     .chart-period {
       display: flex;
       gap: 5px;
     }
-
     .period-btn {
       padding: 4px 10px;
       border-radius: 6px;
-      font-size: 0.7rem;
-      background: rgba(255,255,255,0.05);
+      font-size: 0.68rem;
+      background: var(--bg-hover);
       border: 1px solid var(--border);
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Poppins', sans-serif;
     }
-
     .period-btn.active {
-      background: rgba(0,180,216,0.15);
-      color: var(--blue-primary);
-      border-color: rgba(0,180,216,0.3);
+      background: rgba(6,182,212,0.15);
+      color: var(--primary);
+      border-color: rgba(6,182,212,0.3);
     }
-
     .chart-container {
       position: relative;
       height: 260px;
     }
 
-    /* Gauge chart */
+    /* Gauge */
     .gauge-container {
       display: flex;
       flex-direction: column;
@@ -941,54 +1023,116 @@
       justify-content: center;
       height: 260px;
     }
-
     .gauge-wrap {
       position: relative;
-      width: 180px;
-      height: 180px;
+      width: 180px; height: 180px;
     }
-
-    .gauge-canvas-wrap {
-      width: 100%;
-      height: 100%;
-    }
-
     .gauge-center-text {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
     }
-
     .gauge-value {
       font-family: 'Orbitron', sans-serif;
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--blue-primary);
+      color: var(--primary);
     }
-
     .gauge-unit {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
-
     .gauge-label {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       margin-top: 10px;
       text-align: center;
     }
 
-    /* ============================================================
-       BOTTOM CHARTS ROW
-    ============================================================ */
+    /* Bottom charts */
     .bottom-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 22px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
+
+    /* ============================================================
+       ACHIEVEMENT BADGES (NEW)
+    ============================================================ */
+    .badges-card { margin-bottom: 20px; }
+    .badges-card .info-card-title i { color: var(--amber); }
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 12px;
+    }
+    .badge-item {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px 10px;
+      text-align: center;
+      transition: all var(--transition-base);
+      cursor: pointer;
+      position: relative;
+    }
+    .badge-item:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+    }
+    .badge-item.unlocked {
+      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.03));
+      border-color: rgba(245,158,11,0.3);
+    }
+    .badge-item.unlocked:hover {
+      box-shadow: var(--glow-amber);
+    }
+    .badge-item.locked {
+      opacity: 0.5;
+      filter: grayscale(0.7);
+    }
+    .badge-svg {
+      width: 48px; height: 48px;
+      margin: 0 auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .badge-svg svg {
+      width: 100%; height: 100%;
+    }
+    .badge-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .badge-desc {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .badge-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card-solid);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+      margin-bottom: 5px;
+    }
+    .badge-item:hover .badge-tooltip { opacity: 1; }
 
     /* ============================================================
        FOOTER
@@ -999,184 +1143,88 @@
       border-top: 1px solid var(--border);
       margin-top: 20px;
     }
-
     .dash-footer p {
       font-size: 0.78rem;
       color: var(--text-muted);
     }
+    .dash-footer span { color: var(--primary); }
 
-    .dash-footer span {
-      color: var(--blue-primary);
-    }
-
-    /* ============================================================
-       TOAST
-    ============================================================ */
-    .toast {
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      display: none;
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.85rem;
-      z-index: 99999;
-      transform: translateX(150%);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      max-width: 320px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
     }
-
-    .toast.show { transform: translateX(0); }
-    .toast.success { border-color: rgba(0,255,136,0.4); }
-    .toast.error   { border-color: rgba(255,68,68,0.4); }
+    .sidebar-overlay.show { display: block; }
 
     /* ============================================================
        RESPONSIVE
     ============================================================ */
     @media (max-width: 1024px) {
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .bottom-grid {
-        grid-template-columns: 1fr;
-      }
+      .charts-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .topbar {
-        left: 0;
-      }
-
-      .main {
-        margin-left: 0;
-      }
-
-      .hamburger {
-        display: block;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .secondary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      /* Mobile sidebar overlay */
-      .sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
-      }
-
-      .sidebar-overlay.show {
-        display: block;
-      }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { left: 0; }
+      .main { margin-left: 0; }
+      .hamburger { display: block; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .secondary-grid { grid-template-columns: 1fr; }
+      .widgets-grid { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 480px) {
-      .main {
-        padding: 15px;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar-greeting {
-        display: none;
-      }
-
-      .device-status span:last-child {
-        display: none;
-      }
+      .main { padding: 15px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .topbar-greeting { display: none; }
+      .device-status span:last-child { display: none; }
+      .actions-buttons { width: 100%; }
+      .action-btn { flex: 1; justify-content: center; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ============================================================
-       LOADING SCREEN
-  ============================================================ -->
+  <!-- LOADING SCREEN -->
   <div id="loadingScreen">
-    <div class="loading-logo">⚡ Smart Energy Meter</div>
+    <div class="loading-logo-wrap" data-logo="animated" data-size="100"></div>
     <div class="loading-spinner"></div>
     <p class="loading-text">LOADING DASHBOARD...</p>
   </div>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <span id="toastIcon"></span>
-    <span id="toastMsg"></span>
-  </div>
-
-  <!-- SIDEBAR OVERLAY (mobile) -->
+  <!-- SIDEBAR OVERLAY -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <!-- ============================================================
        SIDEBAR
   ============================================================ -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo-icon">⚡</div>
-      <span class="sidebar-logo-text">Smart Energy Meter</span>
-    </div>
+    <div class="sidebar-header" data-logo="full" data-height="38"></div>
 
     <nav class="sidebar-nav">
       <span class="nav-section-label">Main Menu</span>
-
-      <a class="nav-item active" onclick="showSection('overview')">
-        <i class="fas fa-th-large"></i> Overview
-      </a>
-
-      <a class="nav-item" onclick="showSection('liveMonitor')">
-        <i class="fas fa-broadcast-tower"></i> Live Monitor
-      </a>
-
-      <a class="nav-item" onclick="showSection('analytics')">
-        <i class="fas fa-chart-area"></i> Analytics
-      </a>
-
-      <a class="nav-item" onclick="showSection('billing')">
-        <i class="fas fa-file-invoice-dollar"></i> Billing
-      </a>
+      <a class="nav-item active"><i class="fas fa-th-large"></i> Overview</a>
+      <a class="nav-item" href="#charts"><i class="fas fa-broadcast-tower"></i> Live Monitor</a>
+      <a class="nav-item" href="#charts"><i class="fas fa-chart-area"></i> Analytics</a>
+      <a class="nav-item" href="#bill"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
 
       <span class="nav-section-label">Controls</span>
+      <a class="nav-item" href="#relay"><i class="fas fa-toggle-on"></i> Relay Control</a>
+      <a class="nav-item" href="#fault"><i class="fas fa-bell"></i> Alerts <span class="nav-badge" id="alertBadge" style="display:none;">!</span></a>
 
-      <a class="nav-item" onclick="showSection('relay')">
-        <i class="fas fa-toggle-on"></i> Relay Control
-      </a>
-
-      <a class="nav-item" onclick="showSection('alerts')" id="alertNavItem">
-        <i class="fas fa-bell"></i> Alerts
-        <span class="nav-badge" id="alertBadge" style="display:none;">!</span>
-      </a>
+      <span class="nav-section-label">Insights</span>
+      <a class="nav-item" href="#badges"><i class="fas fa-trophy"></i> Achievements</a>
+      <a class="nav-item" href="#goal"><i class="fas fa-bullseye"></i> Goals</a>
 
       <span class="nav-section-label">Account</span>
-
-      <a class="nav-item" href="profile.html">
-        <i class="fas fa-user"></i> Profile
-      </a>
-
-      <a class="nav-item" onclick="handleLogout()" style="color:var(--red-alert);">
+      <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+      <a class="nav-item" href="about.html"><i class="fas fa-info-circle"></i> About</a>
+      <a class="nav-item" href="docs.html"><i class="fas fa-book"></i> Docs</a>
+      <a class="nav-item" onclick="handleLogout()" style="color:var(--danger); cursor:pointer;">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>
     </nav>
@@ -1212,9 +1260,21 @@
         <span>Online</span>
       </div>
 
-      <button class="topbar-btn" id="alertBtn" onclick="showSection('alerts')" title="Alerts">
-        <i class="fas fa-bell"></i>
-        <span class="notif-badge" id="topAlertBadge" style="display:none;">!</span>
+      <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
       </button>
 
       <button class="topbar-btn" onclick="toggleFullscreen()" title="Fullscreen">
@@ -1228,9 +1288,9 @@
   <!-- ============================================================
        MAIN CONTENT
   ============================================================ -->
-  <main class="main" id="mainContent">
+  <main class="main">
 
-    <!-- FAULT ALERT BANNER -->
+    <!-- FAULT BANNER -->
     <div class="fault-banner" id="faultBanner">
       <div class="fault-icon"><i class="fas fa-exclamation-triangle"></i></div>
       <div class="fault-text">
@@ -1239,191 +1299,276 @@
       </div>
     </div>
 
-    <!-- ============================================================
-         SECTION: OVERVIEW (default)
-    ============================================================ -->
-    <div id="section-overview">
+    <!-- QUICK ACTIONS BAR -->
+    <div class="actions-bar">
+      <div class="actions-title">
+        <i class="fas fa-bolt"></i>
+        Quick Actions
+      </div>
+      <div class="actions-buttons">
+        <button class="action-btn" onclick="exportCSV()">
+          <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="action-btn" onclick="exportPDF()">
+          <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="action-btn primary" onclick="location.reload()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
 
-      <!-- Live Stats Cards -->
-      <div class="stats-grid">
-        <div class="stat-card voltage">
-          <div class="stat-header">
-            <span class="stat-label">Voltage</span>
-            <div class="stat-icon"><i class="fas fa-bolt"></i></div>
-          </div>
-          <div class="stat-value" id="voltageValue">0 <span class="stat-unit">V</span></div>
-          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+    <!-- STAT CARDS -->
+    <div class="stats-grid" id="pdfSection">
+      <div class="stat-card voltage">
+        <div class="stat-header">
+          <span class="stat-label">Voltage</span>
+          <div class="stat-icon"><i class="fas fa-bolt"></i></div>
         </div>
-
-        <div class="stat-card current">
-          <div class="stat-header">
-            <span class="stat-label">Current</span>
-            <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
-          </div>
-          <div class="stat-value" id="currentValue">0 <span class="stat-unit">A</span></div>
-          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
-        </div>
-
-        <div class="stat-card power">
-          <div class="stat-header">
-            <span class="stat-label">Power</span>
-            <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
-          </div>
-          <div class="stat-value" id="powerValue">0 <span class="stat-unit">W</span></div>
-          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
-        </div>
-
-        <div class="stat-card energy">
-          <div class="stat-header">
-            <span class="stat-label">Energy</span>
-            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-          </div>
-          <div class="stat-value" id="energyValue">0 <span class="stat-unit">kWh</span></div>
-          <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
-        </div>
+        <div class="stat-value" id="voltageValue">0 <span class="stat-unit">V</span></div>
+        <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
       </div>
 
-      <!-- Secondary Info Cards -->
-      <div class="secondary-grid">
-
-        <!-- Bill Card -->
-        <div class="info-card">
-          <div class="info-card-header">
-            <h3 class="info-card-title"><i class="fas fa-file-invoice-dollar"></i> Bill Estimation</h3>
-          </div>
-          <div class="bill-grid">
-            <div class="bill-item">
-              <div class="bill-label">Daily Bill</div>
-              <div class="bill-value">₹<span id="dailyBill">0.00</span></div>
-            </div>
-            <div class="bill-item">
-              <div class="bill-label">Monthly Bill</div>
-              <div class="bill-value">₹<span id="monthlyBill">0.00</span></div>
-            </div>
-            <div class="bill-item">
-              <div class="bill-label">Tariff Rate</div>
-              <div class="bill-value tariff">₹<span id="tariffDisplay">6.5</span>/kWh</div>
-            </div>
-            <div class="bill-item">
-              <div class="bill-label">Total Energy</div>
-              <div class="bill-value tariff"><span id="totalEnergyDisplay">0</span> kWh</div>
-            </div>
-          </div>
+      <div class="stat-card current">
+        <div class="stat-header">
+          <span class="stat-label">Current</span>
+          <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
         </div>
-
-        <!-- Relay Card -->
-        <div class="info-card">
-          <div class="info-card-header">
-            <h3 class="info-card-title"><i class="fas fa-toggle-on"></i> Relay Control</h3>
-          </div>
-
-          <div class="relay-status">
-            <div class="relay-info">
-              <div class="relay-indicator" id="relayIndicator"></div>
-              <span class="relay-label">Main Supply</span>
-            </div>
-            <span class="relay-state off" id="relayStateText">OFF</span>
-          </div>
-
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-            <span style="font-size:0.85rem; color:var(--text-secondary);">Toggle Relay</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="relayToggle" onchange="toggleRelay(this.checked)"/>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <p class="relay-note">
-            <i class="fas fa-info-circle"></i>
-            Controls the relay connected to your device
-          </p>
-        </div>
-
-        <!-- Fault Status Card -->
-        <div class="info-card">
-          <div class="info-card-header">
-            <h3 class="info-card-title"><i class="fas fa-shield-alt"></i> Fault Status</h3>
-          </div>
-
-          <div class="fault-status-box" id="faultStatusBox">
-            <div class="fault-status-icon"><i class="fas fa-check-circle" id="faultIcon"></i></div>
-            <div class="fault-status-text">
-              <h4 id="faultTitle">All Normal</h4>
-              <p id="faultDesc">No faults detected in the circuit</p>
-            </div>
-          </div>
-
-          <p class="fault-history-title">Recent Activity</p>
-          <div class="fault-log" id="faultLog">
-            <div class="fault-log-item">
-              <span>System Start</span>
-              <span class="log-time">--:--</span>
-              <span class="log-status normal">Normal</span>
-            </div>
-          </div>
-        </div>
-
+        <div class="stat-value" id="currentValue">0 <span class="stat-unit">A</span></div>
+        <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
       </div>
 
-      <!-- Charts Row -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title"><i class="fas fa-chart-line"></i> Live Power Graph</h3>
-            <div class="chart-period">
-              <button class="period-btn active">Live</button>
-              <button class="period-btn">1H</button>
-              <button class="period-btn">24H</button>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="powerChart"></canvas>
-          </div>
+      <div class="stat-card power">
+        <div class="stat-header">
+          <span class="stat-label">Power</span>
+          <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
         </div>
+        <div class="stat-value" id="powerValue">0 <span class="stat-unit">W</span></div>
+        <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+      </div>
 
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title"><i class="fas fa-tachometer-alt"></i> Power Gauge</h3>
+      <div class="stat-card energy">
+        <div class="stat-header">
+          <span class="stat-label">Energy</span>
+          <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <div class="stat-value" id="energyValue">0 <span class="stat-unit">kWh</span></div>
+        <span class="stat-live"><span class="stat-live-dot"></span> Live</span>
+      </div>
+    </div>
+
+    <!-- SECONDARY CARDS -->
+    <div class="secondary-grid">
+      <div class="info-card" id="bill">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-file-invoice-dollar"></i> Bill Estimation</h3>
+        </div>
+        <div class="bill-grid">
+          <div class="bill-item">
+            <div class="bill-label">Daily Bill</div>
+            <div class="bill-value">₹<span id="dailyBill">0.00</span></div>
           </div>
-          <div class="gauge-container">
-            <div class="gauge-wrap">
-              <div class="gauge-canvas-wrap">
-                <canvas id="gaugeChart"></canvas>
-              </div>
-              <div class="gauge-center-text">
-                <div class="gauge-value" id="gaugeValue">0</div>
-                <div class="gauge-unit">Watts</div>
-              </div>
-            </div>
-            <p class="gauge-label">Real-time Power Consumption</p>
+          <div class="bill-item">
+            <div class="bill-label">Monthly Bill</div>
+            <div class="bill-value">₹<span id="monthlyBill">0.00</span></div>
+          </div>
+          <div class="bill-item">
+            <div class="bill-label">Tariff Rate</div>
+            <div class="bill-value tariff">₹<span id="tariffDisplay">6.5</span>/kWh</div>
+          </div>
+          <div class="bill-item">
+            <div class="bill-label">Total Energy</div>
+            <div class="bill-value tariff"><span id="totalEnergyDisplay">0</span> kWh</div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Charts -->
-      <div class="bottom-grid">
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title"><i class="fas fa-bolt"></i> Voltage & Current</h3>
+      <div class="info-card" id="relay">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-toggle-on"></i> Relay Control</h3>
+        </div>
+        <div class="relay-status">
+          <div class="relay-info">
+            <div class="relay-indicator" id="relayIndicator"></div>
+            <span class="relay-label">Main Supply</span>
           </div>
-          <div class="chart-container">
-            <canvas id="vcChart"></canvas>
+          <span class="relay-state off" id="relayStateText">OFF</span>
+        </div>
+        <div class="toggle-row">
+          <span>Toggle Relay</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="relayToggle" onchange="toggleRelay(this.checked)"/>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <p class="relay-note">
+          <i class="fas fa-info-circle"></i>
+          Controls the relay connected to your device
+        </p>
+      </div>
+
+      <div class="info-card" id="fault">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-shield-alt"></i> Fault Status</h3>
+        </div>
+        <div class="fault-status-box" id="faultStatusBox">
+          <div class="fault-status-icon"><i class="fas fa-check-circle" id="faultIcon"></i></div>
+          <div class="fault-status-text">
+            <h4 id="faultTitle">All Normal</h4>
+            <p id="faultDesc">No faults detected in the circuit</p>
           </div>
         </div>
-
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Energy Usage</h3>
+        <p class="fault-history-title">Recent Activity</p>
+        <div class="fault-log" id="faultLog">
+          <div class="fault-log-item">
+            <span>System Start</span>
+            <span class="log-time">--:--</span>
+            <span class="log-status normal">Normal</span>
           </div>
-          <div class="chart-container">
-            <canvas id="energyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW WIDGETS ROW -->
+    <div class="widgets-grid" id="goal">
+
+      <!-- Goal Tracker -->
+      <div class="info-card goal-widget">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-bullseye"></i> Monthly Goal</h3>
+        </div>
+        <div class="goal-progress-wrap">
+          <div class="goal-header">
+            <span class="goal-current"><span id="goalCurrent">0</span> kWh</span>
+            <span class="goal-target">/ <span id="goalTarget">100</span> kWh</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="goalProgress" style="width:0%"></div>
+          </div>
+          <div class="progress-percent">
+            <span><span id="goalPercent">0</span>% used</span>
+            <span id="goalRemaining">100 kWh left</span>
+          </div>
+        </div>
+        <div class="goal-input-wrap">
+          <input type="number" class="goal-input" id="goalInput" placeholder="Set target (kWh)" value="100" min="1"/>
+          <button class="goal-save-btn" onclick="saveGoal()">Set</button>
+        </div>
+      </div>
+
+      <!-- Saving Tips -->
+      <div class="info-card tips-widget">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-lightbulb"></i> Energy Tips</h3>
+        </div>
+        <div class="tip-box">
+          <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+          <div class="tip-text" id="tipText">
+            Switch to LED bulbs — they use 75% less energy than traditional bulbs and last 25 times longer.
+          </div>
+        </div>
+        <div class="tip-nav">
+          <div class="tip-dots" id="tipDots"></div>
+          <button class="tip-next-btn" onclick="nextTip()">Next Tip <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div class="info-card compare-widget">
+        <div class="info-card-header">
+          <h3 class="info-card-title"><i class="fas fa-chart-line"></i> Comparison</h3>
+        </div>
+        <div class="compare-item">
+          <span class="compare-label">Today</span>
+          <div class="compare-right">
+            <span class="compare-value"><span id="compareToday">0</span> kWh</span>
+            <span class="compare-change same" id="compareChange1">
+              <i class="fas fa-minus"></i> 0%
+            </span>
+          </div>
+        </div>
+        <div class="compare-item">
+          <span class="compare-label">Yesterday</span>
+          <div class="compare-right">
+            <span class="compare-value">0 kWh</span>
+          </div>
+        </div>
+        <div class="compare-item">
+          <span class="compare-label">This Week Avg</span>
+          <div class="compare-right">
+            <span class="compare-value"><span id="compareWeek">0</span> kWh</span>
           </div>
         </div>
       </div>
 
-    </div><!-- end section-overview -->
+    </div>
 
-    <!-- Footer -->
+    <!-- CHARTS -->
+    <div class="charts-grid" id="charts">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title"><i class="fas fa-chart-line"></i> Live Power Graph</h3>
+          <div class="chart-period">
+            <button class="period-btn active">Live</button>
+            <button class="period-btn">1H</button>
+            <button class="period-btn">24H</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="powerChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title"><i class="fas fa-tachometer-alt"></i> Power Gauge</h3>
+        </div>
+        <div class="gauge-container">
+          <div class="gauge-wrap">
+            <canvas id="gaugeChart"></canvas>
+            <div class="gauge-center-text">
+              <div class="gauge-value" id="gaugeValue">0</div>
+              <div class="gauge-unit">Watts</div>
+            </div>
+          </div>
+          <p class="gauge-label">Real-time Power Consumption</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Charts -->
+    <div class="bottom-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title"><i class="fas fa-bolt"></i> Voltage &amp; Current</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="vcChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Energy Usage</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="energyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENT BADGES -->
+    <div class="info-card badges-card" id="badges">
+      <div class="info-card-header">
+        <h3 class="info-card-title"><i class="fas fa-trophy"></i> Achievements</h3>
+        <span class="badge badge-warning" id="badgeCount">0/8 Unlocked</span>
+      </div>
+      <div class="badges-grid" id="badgesGrid">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- FOOTER -->
     <div class="dash-footer">
       <p>© 2025 <span>Smart Energy Meter</span> · Government Polytechnic College, Sangareddy · Designed by <span>Om Pandey</span></p>
     </div>
@@ -1431,25 +1576,17 @@
   </main>
 
   <!-- ============================================================
-       FIREBASE + ALL SCRIPTS
+       SCRIPTS
   ============================================================ -->
-  <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      set,
-      get
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <script src="js/theme.js"></script>
+  <script src="js/logo.js"></script>
 
-    /* ── Firebase Config ── */
+  <!-- Firebase & Main Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
     const firebaseConfig = {
       apiKey:            "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
       authDomain:        "smartenergymeter-dd01b.firebaseapp.com",
@@ -1464,7 +1601,7 @@
     const auth = getAuth(app);
     const db   = getDatabase(app);
 
-    /* ── Chart data arrays ── */
+    /* Global state */
     const MAX_POINTS = 30;
     const timeLabels = [];
     const powerData  = [];
@@ -1474,27 +1611,60 @@
 
     let powerChart, gaugeChart, vcChart, energyChart;
     let userTariff = 6.5;
+    let userGoal   = 100;
+    let currentUser = null;
     let faultLogArr = [];
+    let firstLoginTracked = false;
+    let exportCount = 0;
 
-    /* ── Auth Guard ── */
+    /* Energy Tips */
+    const tips = [
+      "Switch to LED bulbs — they use 75% less energy than traditional bulbs and last 25 times longer.",
+      "Unplug electronics when not in use — they still draw power in standby mode (phantom load).",
+      "Use a programmable thermostat to save up to 10% on heating and cooling costs.",
+      "Wash clothes in cold water — 90% of washing machine energy goes to heating water.",
+      "Air-dry your clothes when possible — dryers are one of the biggest energy consumers.",
+      "Use natural light during the day to reduce artificial lighting needs.",
+      "Regular AC maintenance can improve efficiency by up to 15%.",
+      "Set your refrigerator temperature between 37-40°F for optimal efficiency.",
+      "Use power strips to easily switch off multiple devices at once.",
+      "Install motion sensors in rooms you don't use often to save on lighting."
+    ];
+    let currentTipIndex = 0;
+
+    /* Achievement Badges */
+    const badgeDefinitions = [
+      { id: 'first_login',  name: 'Welcome!',      desc: 'First login',              icon: '🎉', color: '#F59E0B', check: () => firstLoginTracked },
+      { id: 'monitor_100',  name: 'Watchful',      desc: '100+ Wh monitored',        icon: '⚡', color: '#06B6D4', check: (d) => d.energy >= 0.1 },
+      { id: 'monitor_1k',   name: 'Guardian',      desc: '1 kWh milestone',          icon: '🛡️', color: '#8B5CF6', check: (d) => d.energy >= 1 },
+      { id: 'monitor_10k',  name: 'Expert',        desc: '10 kWh monitored',         icon: '🏆', color: '#10F5A0', check: (d) => d.energy >= 10 },
+      { id: 'export_first', name: 'Data Miner',    desc: 'First data export',        icon: '📊', color: '#EC4899', check: () => exportCount >= 1 },
+      { id: 'export_5',     name: 'Analyst',       desc: '5 data exports',           icon: '📈', color: '#F43F5E', check: () => exportCount >= 5 },
+      { id: 'goal_setter',  name: 'Goal Setter',   desc: 'Set a monthly goal',       icon: '🎯', color: '#8B5CF6', check: () => localStorage.getItem('sem-goal-set') === 'true' },
+      { id: 'safety_first', name: 'Safety First',  desc: 'Handled a fault alert',    icon: '🚨', color: '#F43F5E', check: () => localStorage.getItem('sem-fault-handled') === 'true' }
+    ];
+
+    /* Auth Guard */
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = 'login.html';
         return;
       }
 
-      /* Set user info in UI */
-      const name    = user.displayName || 'User';
-      const email   = user.email || '';
+      currentUser = user;
+      const name = user.displayName || 'User';
+      const email = user.email || '';
       const initial = name.charAt(0).toUpperCase();
 
+      /* Set user in UI */
       document.getElementById('topbarName').textContent    = name.split(' ')[0];
       document.getElementById('sidebarName').textContent   = name;
       document.getElementById('sidebarEmail').textContent  = email;
-      document.getElementById('sidebarAvatar').textContent = initial;
-      document.getElementById('topbarAvatar').textContent  = initial;
 
-      /* Get user tariff from DB */
+      /* Load photo or initial */
+      const sidebarAvatar = document.getElementById('sidebarAvatar');
+      const topbarAvatar  = document.getElementById('topbarAvatar');
+
       try {
         const userSnap = await get(ref(db, 'Users/' + user.uid));
         if (userSnap.exists()) {
@@ -1503,23 +1673,51 @@
             userTariff = parseFloat(ud.tariff);
             document.getElementById('tariffDisplay').textContent = userTariff;
           }
+          if (ud.goal) {
+            userGoal = parseFloat(ud.goal);
+            document.getElementById('goalTarget').textContent = userGoal;
+            document.getElementById('goalInput').value = userGoal;
+          }
+          if (ud.photoURL) {
+            sidebarAvatar.innerHTML = `<img src="${ud.photoURL}" alt="Avatar"/>`;
+            topbarAvatar.innerHTML  = `<img src="${ud.photoURL}" alt="Avatar"/>`;
+          } else {
+            sidebarAvatar.textContent = initial;
+            topbarAvatar.textContent  = initial;
+          }
+        } else {
+          sidebarAvatar.textContent = initial;
+          topbarAvatar.textContent  = initial;
         }
-      } catch (e) { /* use default tariff */ }
+      } catch (e) {
+        sidebarAvatar.textContent = initial;
+        topbarAvatar.textContent  = initial;
+      }
 
-      /* Initialize Charts */
+      /* Track first login */
+      if (!localStorage.getItem('sem-first-login')) {
+        localStorage.setItem('sem-first-login', 'true');
+        firstLoginTracked = true;
+      } else {
+        firstLoginTracked = true;
+      }
+
+      /* Load exportCount from localStorage */
+      exportCount = parseInt(localStorage.getItem('sem-export-count') || '0');
+
+      /* Init */
       initCharts();
+      renderTips();
+      renderBadges({ energy: 0 });
+      startLiveData();
 
-      /* Start listening to live data */
-      startLiveData(user);
-
-      /* Hide loading screen */
       setTimeout(() => {
         document.getElementById('loadingScreen').classList.add('hide');
       }, 800);
     });
 
-    /* ── Start Live Data Listener ── */
-    function startLiveData(user) {
+    /* Live Data */
+    function startLiveData() {
       const liveRef = ref(db, 'SmartEnergyMeter/Devices/device001/Live');
 
       onValue(liveRef, (snapshot) => {
@@ -1533,7 +1731,7 @@
         const fault   = d.fault   || false;
         const relay   = d.relay   || false;
 
-        /* Update stat cards */
+        /* Stat cards */
         document.getElementById('voltageValue').innerHTML =
           `${voltage.toFixed(1)} <span class="stat-unit">V</span>`;
         document.getElementById('currentValue').innerHTML =
@@ -1543,62 +1741,64 @@
         document.getElementById('energyValue').innerHTML =
           `${energy.toFixed(3)} <span class="stat-unit">kWh</span>`;
 
-        /* Update bill */
+        /* Bill */
         const dailyBill   = (energy * userTariff).toFixed(2);
         const monthlyBill = (energy * userTariff * 30).toFixed(2);
         document.getElementById('dailyBill').textContent       = dailyBill;
         document.getElementById('monthlyBill').textContent     = monthlyBill;
         document.getElementById('totalEnergyDisplay').textContent = energy.toFixed(3);
 
-        /* Update relay */
+        /* Goal progress */
+        updateGoal(energy);
+
+        /* Comparison */
+        document.getElementById('compareToday').textContent = energy.toFixed(2);
+        document.getElementById('compareWeek').textContent  = (energy / 7).toFixed(2);
+
+        /* Relay */
         const relayInd   = document.getElementById('relayIndicator');
         const relayState = document.getElementById('relayStateText');
         const relayTgl   = document.getElementById('relayToggle');
-
         if (relay) {
           relayInd.classList.add('on');
           relayState.textContent = 'ON';
-          relayState.className   = 'relay-state on';
+          relayState.className = 'relay-state on';
           relayTgl.checked = true;
         } else {
           relayInd.classList.remove('on');
           relayState.textContent = 'OFF';
-          relayState.className   = 'relay-state off';
+          relayState.className = 'relay-state off';
           relayTgl.checked = false;
         }
 
-        /* Update fault */
-        const faultBanner    = document.getElementById('faultBanner');
-        const faultBox       = document.getElementById('faultStatusBox');
-        const faultIcon      = document.getElementById('faultIcon');
-        const faultTitle     = document.getElementById('faultTitle');
-        const faultDesc      = document.getElementById('faultDesc');
-        const alertBadge     = document.getElementById('alertBadge');
-        const topAlertBadge  = document.getElementById('topAlertBadge');
+        /* Fault */
+        const faultBanner   = document.getElementById('faultBanner');
+        const faultBox      = document.getElementById('faultStatusBox');
+        const faultIcon     = document.getElementById('faultIcon');
+        const faultTitle    = document.getElementById('faultTitle');
+        const faultDesc     = document.getElementById('faultDesc');
+        const alertBadge    = document.getElementById('alertBadge');
 
         if (fault) {
           faultBanner.classList.add('show');
           faultBox.classList.add('alert');
-          faultIcon.className  = 'fas fa-exclamation-triangle';
+          faultIcon.className = 'fas fa-exclamation-triangle';
           faultTitle.textContent = 'Fault Detected!';
           faultDesc.textContent  = 'Abnormal condition in circuit';
-          alertBadge.style.display    = 'inline';
-          topAlertBadge.style.display = 'flex';
-
+          alertBadge.style.display = 'inline';
           addFaultLog('Fault Detected', 'fault');
+          localStorage.setItem('sem-fault-handled', 'true');
         } else {
           faultBanner.classList.remove('show');
           faultBox.classList.remove('alert');
-          faultIcon.className    = 'fas fa-check-circle';
+          faultIcon.className = 'fas fa-check-circle';
           faultTitle.textContent = 'All Normal';
           faultDesc.textContent  = 'No faults detected';
-          alertBadge.style.display    = 'none';
-          topAlertBadge.style.display = 'none';
+          alertBadge.style.display = 'none';
         }
 
-        /* Update charts */
+        /* Charts */
         const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
         timeLabels.push(now);
         powerData.push(power);
         voltData.push(voltage);
@@ -1606,11 +1806,8 @@
         energyData.push(energy);
 
         if (timeLabels.length > MAX_POINTS) {
-          timeLabels.shift();
-          powerData.shift();
-          voltData.shift();
-          currData.shift();
-          energyData.shift();
+          timeLabels.shift(); powerData.shift();
+          voltData.shift(); currData.shift(); energyData.shift();
         }
 
         if (powerChart) {
@@ -1618,274 +1815,269 @@
           powerChart.data.datasets[0].data = [...powerData];
           powerChart.update('none');
         }
-
         if (vcChart) {
           vcChart.data.labels = [...timeLabels];
           vcChart.data.datasets[0].data = [...voltData];
           vcChart.data.datasets[1].data = [...currData];
           vcChart.update('none');
         }
-
         if (energyChart) {
           energyChart.data.labels = [...timeLabels];
           energyChart.data.datasets[0].data = [...energyData];
           energyChart.update('none');
         }
-
-        /* Update gauge */
         if (gaugeChart) {
           const maxPower = 3000;
-          const pct      = Math.min(power / maxPower * 100, 100);
+          const pct = Math.min(power / maxPower * 100, 100);
           gaugeChart.data.datasets[0].data = [pct, 100 - pct];
-
-          if (pct < 30) {
-            gaugeChart.data.datasets[0].backgroundColor[0] = '#00FF88';
-          } else if (pct < 70) {
-            gaugeChart.data.datasets[0].backgroundColor[0] = '#FFB703';
-          } else {
-            gaugeChart.data.datasets[0].backgroundColor[0] = '#FF4444';
-          }
-
+          if (pct < 30) gaugeChart.data.datasets[0].backgroundColor[0] = '#10F5A0';
+          else if (pct < 70) gaugeChart.data.datasets[0].backgroundColor[0] = '#F59E0B';
+          else gaugeChart.data.datasets[0].backgroundColor[0] = '#F43F5E';
           gaugeChart.update('none');
           document.getElementById('gaugeValue').textContent = power.toFixed(0);
         }
 
-        /* Update device status */
+        /* Device status */
         const ds = document.getElementById('deviceStatus');
         if (voltage > 0 || current > 0 || power > 0) {
           ds.classList.remove('offline');
           ds.innerHTML = '<span class="status-dot"></span><span>device001</span><span>Online</span>';
         }
 
+        /* Update badges */
+        renderBadges({ energy });
       }, (error) => {
-        console.error('Firebase read error:', error);
         const ds = document.getElementById('deviceStatus');
         ds.classList.add('offline');
         ds.innerHTML = '<span class="status-dot"></span><span>device001</span><span>Offline</span>';
       });
     }
 
-    /* ── Relay Toggle ── */
+    /* Goal update */
+    function updateGoal(energy) {
+      const pct = Math.min((energy / userGoal) * 100, 100);
+      const remaining = Math.max(userGoal - energy, 0);
+      document.getElementById('goalCurrent').textContent   = energy.toFixed(2);
+      document.getElementById('goalPercent').textContent   = pct.toFixed(0);
+      document.getElementById('goalRemaining').textContent = remaining.toFixed(2) + ' kWh left';
+
+      const bar = document.getElementById('goalProgress');
+      bar.style.width = pct + '%';
+      bar.className = 'progress-fill';
+      if (pct >= 90) bar.classList.add('danger');
+      else if (pct >= 70) bar.classList.add('warning');
+    }
+
+    /* Save goal */
+    window.saveGoal = async function() {
+      const val = parseFloat(document.getElementById('goalInput').value);
+      if (!val || val <= 0) {
+        Toast.error('Please enter a valid goal');
+        return;
+      }
+      userGoal = val;
+      document.getElementById('goalTarget').textContent = val;
+      localStorage.setItem('sem-goal-set', 'true');
+      try {
+        await update(ref(db, 'Users/' + currentUser.uid), { goal: val });
+        Toast.success('Goal updated to ' + val + ' kWh');
+      } catch (e) {
+        Toast.error('Failed to save goal');
+      }
+    };
+
+    /* Tips */
+    window.renderTips = function() {
+      const dots = document.getElementById('tipDots');
+      dots.innerHTML = tips.slice(0, 5).map((_, i) =>
+        `<div class="tip-dot ${i === currentTipIndex ? 'active' : ''}"></div>`
+      ).join('');
+      document.getElementById('tipText').textContent = tips[currentTipIndex];
+    };
+
+    window.nextTip = function() {
+      currentTipIndex = (currentTipIndex + 1) % tips.length;
+      renderTips();
+    };
+
+    /* Badges */
+    window.renderBadges = function(data) {
+      let unlockedCount = 0;
+      const html = badgeDefinitions.map(b => {
+        const unlocked = b.check(data || {});
+        if (unlocked) unlockedCount++;
+        return `
+          <div class="badge-item ${unlocked ? 'unlocked' : 'locked'}">
+            <div class="badge-tooltip">${b.desc}</div>
+            <div class="badge-svg">
+              <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="20" fill="${unlocked ? b.color : '#94A3B8'}" opacity="${unlocked ? '0.2' : '0.1'}"/>
+                <circle cx="24" cy="24" r="20" fill="none" stroke="${unlocked ? b.color : '#94A3B8'}" stroke-width="2"/>
+                <text x="24" y="32" text-anchor="middle" font-size="22">${b.icon}</text>
+              </svg>
+            </div>
+            <div class="badge-name">${b.name}</div>
+            <div class="badge-desc">${b.desc}</div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('badgesGrid').innerHTML = html;
+      document.getElementById('badgeCount').textContent = `${unlockedCount}/${badgeDefinitions.length} Unlocked`;
+    };
+
+    /* Relay toggle */
     window.toggleRelay = function(state) {
       const relayRef = ref(db, 'SmartEnergyMeter/Devices/device001/Live/relay');
       set(relayRef, state).then(() => {
-        showToast('success', '✅', `Relay turned ${state ? 'ON' : 'OFF'}`);
-      }).catch((err) => {
-        showToast('error', '❌', 'Failed to toggle relay');
+        Toast.success(`Relay turned ${state ? 'ON' : 'OFF'}`);
+      }).catch(() => {
+        Toast.error('Failed to toggle relay');
       });
     };
 
-    /* ── Logout ── */
+    /* Logout */
     window.handleLogout = function() {
-      signOut(auth).then(() => {
-        window.location.href = 'login.html';
+      signOut(auth).then(() => { window.location.href = 'login.html'; });
+    };
+
+    /* Export CSV */
+    window.exportCSV = function() {
+      if (timeLabels.length === 0) {
+        Toast.warning('No data to export yet');
+        return;
+      }
+      const csvData = timeLabels.map((t, i) => ({
+        Time:    t,
+        Voltage: voltData[i]?.toFixed(2) || 0,
+        Current: currData[i]?.toFixed(2) || 0,
+        Power:   powerData[i]?.toFixed(2) || 0,
+        Energy:  energyData[i]?.toFixed(3) || 0
+      }));
+      const csv = Papa.unparse(csvData);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `energy-data-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      exportCount++;
+      localStorage.setItem('sem-export-count', exportCount.toString());
+      Toast.success('CSV downloaded successfully!');
+      renderBadges({ energy: parseFloat(document.getElementById('totalEnergyDisplay').textContent) });
+    };
+
+    /* Export PDF */
+    window.exportPDF = function() {
+      const element = document.getElementById('pdfSection');
+      Toast.info('Generating PDF...');
+      const opts = {
+        margin: 10,
+        filename: `energy-report-${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, backgroundColor: '#0B1120' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      html2pdf().set(opts).from(element).save().then(() => {
+        exportCount++;
+        localStorage.setItem('sem-export-count', exportCount.toString());
+        Toast.success('PDF downloaded successfully!');
+        renderBadges({ energy: parseFloat(document.getElementById('totalEnergyDisplay').textContent) });
       });
     };
 
-    /* ── Initialize Charts ── */
+    /* Initialize Charts */
     function initCharts() {
       const chartFont = { family: "'Poppins', sans-serif" };
-      const gridColor = 'rgba(0,180,216,0.08)';
+      const gridColor = 'rgba(6,182,212,0.08)';
       const tickColor = '#64748B';
 
-      /* Power Line Chart */
       const powerCtx = document.getElementById('powerChart').getContext('2d');
-      const powerGrad = powerCtx.createLinearGradient(0, 0, 0, 260);
-      powerGrad.addColorStop(0, 'rgba(0,180,216,0.3)');
-      powerGrad.addColorStop(1, 'rgba(0,180,216,0)');
+      const grad = powerCtx.createLinearGradient(0, 0, 0, 260);
+      grad.addColorStop(0, 'rgba(6,182,212,0.3)');
+      grad.addColorStop(1, 'rgba(6,182,212,0)');
 
       powerChart = new Chart(powerCtx, {
         type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Power (W)',
-            data: [],
-            borderColor: '#00B4D8',
-            backgroundColor: powerGrad,
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: '#00B4D8',
-          }]
-        },
+        data: { labels: [], datasets: [{
+          label: 'Power (W)', data: [], borderColor: '#06B6D4',
+          backgroundColor: grad, fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0
+        }]},
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#112240',
-              titleFont: chartFont,
-              bodyFont: chartFont,
-              borderColor: 'rgba(0,180,216,0.3)',
-              borderWidth: 1,
-            }
-          },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            backgroundColor: '#131C31', titleFont: chartFont, bodyFont: chartFont,
+            borderColor: 'rgba(6,182,212,0.3)', borderWidth: 1 } },
           scales: {
-            x: {
-              grid: { color: gridColor },
-              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
-            },
-            y: {
-              grid: { color: gridColor },
-              ticks: { color: tickColor, font: { size: 10 } },
-              beginAtZero: true,
-            }
+            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 } },
+            y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } }, beginAtZero: true }
           },
-          animation: false,
+          animation: false
         }
       });
 
-      /* Gauge (Doughnut) */
       const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
       gaugeChart = new Chart(gaugeCtx, {
         type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [0, 100],
-            backgroundColor: ['#00FF88', 'rgba(255,255,255,0.05)'],
-            borderWidth: 0,
-            circumference: 270,
-            rotation: 225,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '80%',
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          animation: false,
-        }
+        data: { datasets: [{
+          data: [0, 100], backgroundColor: ['#10F5A0', 'rgba(255,255,255,0.05)'],
+          borderWidth: 0, circumference: 270, rotation: 225
+        }]},
+        options: { responsive: true, maintainAspectRatio: false, cutout: '80%',
+          plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: false }
       });
 
-      /* Voltage & Current Chart */
       const vcCtx = document.getElementById('vcChart').getContext('2d');
       vcChart = new Chart(vcCtx, {
         type: 'line',
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: 'Voltage (V)',
-              data: [],
-              borderColor: '#00B4D8',
-              borderWidth: 2,
-              tension: 0.4,
-              pointRadius: 0,
-              yAxisID: 'y',
-            },
-            {
-              label: 'Current (A)',
-              data: [],
-              borderColor: '#00FF88',
-              borderWidth: 2,
-              tension: 0.4,
-              pointRadius: 0,
-              yAxisID: 'y1',
-            }
-          ]
-        },
+        data: { labels: [], datasets: [
+          { label: 'Voltage (V)', data: [], borderColor: '#06B6D4', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Current (A)', data: [], borderColor: '#10F5A0', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y1' }
+        ]},
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: '#CBD5E1', font: chartFont, boxWidth: 12 }
-            },
-            tooltip: {
-              backgroundColor: '#112240',
-              titleFont: chartFont,
-              bodyFont: chartFont,
-              borderColor: 'rgba(0,180,216,0.3)',
-              borderWidth: 1,
-            }
-          },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#CBD5E1', font: chartFont, boxWidth: 12 } },
+            tooltip: { backgroundColor: '#131C31', titleFont: chartFont, bodyFont: chartFont, borderColor: 'rgba(6,182,212,0.3)', borderWidth: 1 } },
           scales: {
-            x: {
-              grid: { color: gridColor },
-              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
-            },
-            y: {
-              type: 'linear',
-              position: 'left',
-              grid: { color: gridColor },
-              ticks: { color: '#00B4D8', font: { size: 10 } },
-              title: { display: true, text: 'Voltage (V)', color: '#00B4D8', font: { size: 10 } },
-              beginAtZero: true,
-            },
-            y1: {
-              type: 'linear',
-              position: 'right',
-              grid: { drawOnChartArea: false },
-              ticks: { color: '#00FF88', font: { size: 10 } },
-              title: { display: true, text: 'Current (A)', color: '#00FF88', font: { size: 10 } },
-              beginAtZero: true,
-            }
+            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 } },
+            y: { type: 'linear', position: 'left', grid: { color: gridColor }, ticks: { color: '#06B6D4', font: { size: 10 } }, beginAtZero: true },
+            y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#10F5A0', font: { size: 10 } }, beginAtZero: true }
           },
-          animation: false,
+          animation: false
         }
       });
 
-      /* Energy Bar Chart */
       const energyCtx = document.getElementById('energyChart').getContext('2d');
-      const energyGrad = energyCtx.createLinearGradient(0, 0, 0, 260);
-      energyGrad.addColorStop(0, 'rgba(168,85,247,0.6)');
-      energyGrad.addColorStop(1, 'rgba(168,85,247,0.1)');
+      const eGrad = energyCtx.createLinearGradient(0, 0, 0, 260);
+      eGrad.addColorStop(0, 'rgba(139,92,246,0.6)');
+      eGrad.addColorStop(1, 'rgba(139,92,246,0.1)');
 
       energyChart = new Chart(energyCtx, {
         type: 'bar',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Energy (kWh)',
-            data: [],
-            backgroundColor: energyGrad,
-            borderColor: '#A855F7',
-            borderWidth: 1,
-            borderRadius: 4,
-          }]
-        },
+        data: { labels: [], datasets: [{
+          label: 'Energy (kWh)', data: [], backgroundColor: eGrad,
+          borderColor: '#8B5CF6', borderWidth: 1, borderRadius: 4
+        }]},
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#112240',
-              titleFont: chartFont,
-              bodyFont: chartFont,
-              borderColor: 'rgba(168,85,247,0.3)',
-              borderWidth: 1,
-            }
-          },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            backgroundColor: '#131C31', titleFont: chartFont, bodyFont: chartFont,
+            borderColor: 'rgba(139,92,246,0.3)', borderWidth: 1 } },
           scales: {
-            x: {
-              grid: { color: gridColor },
-              ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 }
-            },
-            y: {
-              grid: { color: gridColor },
-              ticks: { color: tickColor, font: { size: 10 } },
-              beginAtZero: true,
-            }
+            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 9 }, maxRotation: 0, maxTicksLimit: 8 } },
+            y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } }, beginAtZero: true }
           },
-          animation: false,
+          animation: false
         }
       });
     }
 
-    /* ── Fault Log ── */
     function addFaultLog(msg, type) {
       const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
       const last = faultLogArr[faultLogArr.length - 1];
       if (last && last.msg === msg && last.type === type) return;
-
       faultLogArr.push({ msg, type, time: now });
       if (faultLogArr.length > 10) faultLogArr.shift();
-
       const logEl = document.getElementById('faultLog');
       logEl.innerHTML = faultLogArr.map(l => `
         <div class="fault-log-item">
@@ -1895,53 +2087,21 @@
         </div>
       `).reverse().join('');
     }
-
   </script>
 
-  <!-- ============================================================
-       UI SCRIPTS (non-module)
-  ============================================================ -->
+  <!-- UI Scripts -->
   <script>
-    /* ── Sidebar Toggle (mobile) ── */
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('sidebarOverlay').classList.toggle('show');
     }
-
     function closeSidebar() {
       document.getElementById('sidebar').classList.remove('open');
       document.getElementById('sidebarOverlay').classList.remove('show');
     }
-
-    /* ── Section Navigation ── */
-    function showSection(sectionName) {
-      /* For now all content is in overview */
-      /* This is ready for future page expansion */
-      const items = document.querySelectorAll('.nav-item');
-      items.forEach(i => i.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-      closeSidebar();
-    }
-
-    /* ── Fullscreen ── */
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    /* ── Toast ── */
-    let toastTimer;
-    function showToast(type, icon, msg) {
-      const toast = document.getElementById('toast');
-      toast.className = `toast ${type}`;
-      document.getElementById('toastIcon').textContent = icon;
-      document.getElementById('toastMsg').textContent  = msg;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
     }
   </script>
 

@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0B1120"/>
+  <title>Documentation – Smart Energy Meter</title>
+  <meta name="description" content="Complete guide to using Smart Energy Meter - setup, features, troubleshooting"/>
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* ============================================================
+       LOADING
+    ============================================================ */
+    #loadingScreen {
+      position: fixed; inset: 0;
+      background: var(--bg-primary);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+    #loadingScreen.hide { opacity: 0; pointer-events: none; }
+    .loading-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(6,182,212,0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ============================================================
+       SIDEBAR (shared)
+    ============================================================ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 15px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .nav-section-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 15px 12px 8px;
+      font-weight: 600;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 15px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.87rem;
+      font-weight: 500;
+      transition: all var(--transition-base);
+      cursor: pointer;
+      position: relative;
+    }
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--primary);
+    }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,245,160,0.05));
+      color: var(--primary);
+      border: 1px solid rgba(6,182,212,0.2);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 60%;
+      background: var(--primary);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+    .sidebar-footer { padding: 15px; border-top: 1px solid var(--border); }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      color: var(--bg-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-user-email {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================================
+       TOPBAR
+    ============================================================ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: var(--topbar-height);
+      background: rgba(11,17,32,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      z-index: 999;
+    }
+    [data-theme="light"] .topbar { background: rgba(255,255,255,0.9); }
+    .topbar-left { display: flex; align-items: center; gap: 15px; }
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .topbar-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+    }
+    .topbar-title i { color: var(--primary); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-btn {
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-base);
+      text-decoration: none;
+    }
+    .topbar-btn:hover {
+      background: rgba(6,182,212,0.1);
+      color: var(--primary);
+      border-color: var(--border-hover);
+    }
+
+    /* ============================================================
+       MAIN CONTENT
+    ============================================================ */
+    .main {
+      margin-left: var(--sidebar-width);
+      margin-top: var(--topbar-height);
+      padding: 25px;
+      min-height: calc(100vh - var(--topbar-height));
+    }
+
+    /* ============================================================
+       DOCS LAYOUT (2-column: TOC + Content)
+    ============================================================ */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+       TABLE OF CONTENTS (sticky sidebar)
+    ============================================================ */
+    .docs-toc {
+      position: sticky;
+      top: calc(var(--topbar-height) + 25px);
+      align-self: start;
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      max-height: calc(100vh - var(--topbar-height) - 50px);
+      overflow-y: auto;
+    }
+    .toc-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+    }
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .toc-list a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+    .toc-list a:hover {
+      background: var(--bg-hover);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    .toc-list a.active {
+      background: rgba(6,182,212,0.1);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    .toc-list a i { font-size: 0.75rem; }
+
+    /* ============================================================
+       DOCS CONTENT
+    ============================================================ */
+    .docs-content {
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+    }
+
+    /* Hero section */
+    .docs-hero {
+      text-align: center;
+      padding-bottom: 30px;
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .docs-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: var(--primary);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .docs-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    .docs-title .highlight {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .docs-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Sections */
+    .doc-section {
+      margin-bottom: 45px;
+      scroll-margin-top: 90px;
+    }
+    .doc-section:last-child { margin-bottom: 0; }
+    .doc-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    .doc-section-icon {
+      width: 42px; height: 42px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-primary);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      box-shadow: var(--glow-primary);
+    }
+    .doc-section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .doc-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+    .doc-text strong { color: var(--text-primary); }
+    .doc-text code {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--primary);
+    }
+
+    /* Steps */
+    .step-list {
+      list-style: none;
+      counter-reset: step;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .step-list li {
+      counter-increment: step;
+      display: flex;
+      gap: 15px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px 18px;
+      transition: all 0.3s ease;
+    }
+    .step-list li:hover {
+      border-color: var(--border-hover);
+      transform: translateX(5px);
+    }
+    .step-list li::before {
+      content: counter(step);
+      width: 32px; height: 32px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-primary);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .step-content {
+      flex: 1;
+    }
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Feature list */
+    .feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      transition: all 0.3s ease;
+    }
+    .feature-list li:hover {
+      border-color: var(--border-hover);
+    }
+    .feature-check {
+      color: var(--accent);
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text {
+      font-size: 0.87rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .feature-text strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    /* Info/Warning boxes */
+    .info-box {
+      background: rgba(6,182,212,0.06);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 15px 18px;
+      margin: 15px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .info-box.warning {
+      background: rgba(245,158,11,0.06);
+      border-left-color: var(--amber);
+    }
+    .info-box.danger {
+      background: rgba(244,63,94,0.06);
+      border-left-color: var(--danger);
+    }
+    .info-box.success {
+      background: rgba(16,245,160,0.06);
+      border-left-color: var(--accent);
+    }
+    .info-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .info-box .info-icon { color: var(--primary); }
+    .info-box.warning .info-icon { color: var(--amber); }
+    .info-box.danger .info-icon { color: var(--danger); }
+    .info-box.success .info-icon { color: var(--accent); }
+    .info-text {
+      font-size: 0.87rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    .info-text strong {
+      color: var(--text-primary);
+    }
+
+    /* Code block */
+    .code-block {
+      background: #0B1120;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px 18px;
+      margin: 15px 0;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--primary);
+      position: relative;
+    }
+    .code-block pre {
+      margin: 0;
+      white-space: pre;
+      font-family: inherit;
+    }
+    .code-label {
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      background: var(--primary);
+      color: var(--bg-primary);
+      font-size: 0.65rem;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* FAQ Accordion */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .faq-item {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .faq-item.open {
+      border-color: var(--border-hover);
+    }
+    .faq-question {
+      padding: 15px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+    .faq-question:hover { color: var(--primary); }
+    .faq-question .faq-toggle {
+      color: var(--primary);
+      font-size: 0.9rem;
+      transition: transform 0.3s ease;
+    }
+    .faq-item.open .faq-toggle {
+      transform: rotate(45deg);
+    }
+    .faq-answer {
+      padding: 0 18px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      font-size: 0.87rem;
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-answer {
+      padding: 0 18px 18px;
+      max-height: 500px;
+    }
+
+    /* Troubleshooting cards */
+    .trouble-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .trouble-card {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: all 0.3s ease;
+    }
+    .trouble-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+    }
+    .trouble-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .trouble-icon-sm {
+      width: 32px; height: 32px;
+      background: rgba(244,63,94,0.15);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--danger);
+      font-size: 0.9rem;
+    }
+    .trouble-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .trouble-fix {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .trouble-fix strong { color: var(--accent); }
+
+    /* Help footer */
+    .help-footer {
+      text-align: center;
+      background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(16,245,160,0.03));
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      margin-top: 40px;
+    }
+    .help-footer i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .help-footer h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .help-footer p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+    .help-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .help-footer a:hover {
+      text-decoration: underline;
+      color: var(--accent);
+    }
+
+    /* Footer */
+    .dash-footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+    .dash-footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .dash-footer span { color: var(--primary); }
+
+    /* Sidebar overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .docs-layout { grid-template-columns: 1fr; }
+      .docs-toc {
+        position: static;
+        max-height: none;
+      }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { left: 0; }
+      .main { margin-left: 0; }
+      .hamburger { display: block; }
+      .docs-content { padding: 25px 20px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOADING -->
+  <div id="loadingScreen">
+    <div data-logo="animated" data-size="100" style="margin-bottom:20px;"></div>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">LOADING DOCS...</p>
+  </div>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header" data-logo="full" data-height="38"></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main Menu</span>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-th-large"></i> Overview</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-broadcast-tower"></i> Live Monitor</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-chart-area"></i> Analytics</a>
+      <a class="nav-item" href="dashboard.html"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+      <span class="nav-section-label">Account</span>
+      <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+      <a class="nav-item" href="about.html"><i class="fas fa-info-circle"></i> About</a>
+      <a class="nav-item active"><i class="fas fa-book"></i> Docs</a>
+      <a class="nav-item" href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a class="nav-item" onclick="handleLogout()" style="color:var(--danger); cursor:pointer;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">User</div>
+          <div class="sidebar-user-email" id="sidebarEmail">user@email.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <h1 class="topbar-title"><i class="fas fa-book"></i> Documentation</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a href="dashboard.html" class="topbar-btn"><i class="fas fa-th-large"></i></a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="docs-layout">
+
+      <!-- TABLE OF CONTENTS -->
+      <nav class="docs-toc">
+        <div class="toc-title">On This Page</div>
+        <ul class="toc-list">
+          <li><a href="#getting-started" class="active"><i class="fas fa-rocket"></i> Getting Started</a></li>
+          <li><a href="#dashboard-guide"><i class="fas fa-th-large"></i> Dashboard Guide</a></li>
+          <li><a href="#hardware-setup"><i class="fas fa-microchip"></i> Hardware Setup</a></li>
+          <li><a href="#understanding-data"><i class="fas fa-chart-line"></i> Reading Data</a></li>
+          <li><a href="#relay-control"><i class="fas fa-toggle-on"></i> Relay Control</a></li>
+          <li><a href="#tariff-billing"><i class="fas fa-rupee-sign"></i> Tariff & Billing</a></li>
+          <li><a href="#export-data"><i class="fas fa-download"></i> Exporting Data</a></li>
+          <li><a href="#troubleshooting"><i class="fas fa-wrench"></i> Troubleshooting</a></li>
+          <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
+        </ul>
+      </nav>
+
+      <!-- DOCS CONTENT -->
+      <div class="docs-content">
+
+        <!-- Hero -->
+        <div class="docs-hero">
+          <div class="docs-badge"><i class="fas fa-book-open"></i> Documentation</div>
+          <h1 class="docs-title">Complete <span class="highlight">User Guide</span></h1>
+          <p class="docs-subtitle">
+            Everything you need to know about setting up and using your Smart Energy Meter.
+          </p>
+        </div>
+
+        <!-- GETTING STARTED -->
+        <section class="doc-section" id="getting-started">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-rocket"></i></div>
+            <h2 class="doc-section-title">Getting Started</h2>
+          </div>
+          <p class="doc-text">
+            Welcome to Smart Energy Meter! Follow these simple steps to start monitoring your electricity in real-time.
+          </p>
+
+          <ol class="step-list">
+            <li>
+              <div class="step-content">
+                <div class="step-title">Create Your Account</div>
+                <div class="step-desc">Click <strong>Sign Up</strong> on the homepage. Enter your name, email, password, device ID and tariff rate.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Verify Your Device ID</div>
+                <div class="step-desc">Your device ID (e.g. <code>device001</code>) links your hardware to your account.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Login to Dashboard</div>
+                <div class="step-desc">Use your credentials to access the live monitoring dashboard.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Connect Your Hardware</div>
+                <div class="step-desc">Follow the Hardware Setup guide below to install your ESP32 with sensors.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Start Monitoring!</div>
+                <div class="step-desc">Once connected, live data appears instantly on your dashboard.</div>
+              </div>
+            </li>
+          </ol>
+
+          <div class="info-box success">
+            <i class="fas fa-check-circle info-icon"></i>
+            <div class="info-text">
+              <strong>Pro Tip:</strong> Enable browser notifications in your Profile to get instant fault alerts even when the dashboard is not open.
+            </div>
+          </div>
+        </section>
+
+        <!-- DASHBOARD GUIDE -->
+        <section class="doc-section" id="dashboard-guide">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-th-large"></i></div>
+            <h2 class="doc-section-title">Dashboard Guide</h2>
+          </div>
+          <p class="doc-text">
+            The dashboard is your control center. Here's what each section does:
+          </p>
+
+          <ul class="feature-list">
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Live Stats Cards</strong>
+                Shows real-time Voltage, Current, Power and Energy values updated every second.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Bill Estimation</strong>
+                Auto-calculates daily and monthly bills based on your tariff rate.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Relay Control</strong>
+                Turn your device ON/OFF remotely with a single click.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Fault Status</strong>
+                Red alert banner appears when abnormal conditions are detected.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Monthly Goal</strong>
+                Set a kWh target and track your progress with a visual progress bar.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Energy Tips</strong>
+                Rotating tips to help you save more energy every day.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Live Charts</strong>
+                Real-time graphs showing power trends and voltage/current variations.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text">
+                <strong>Achievements</strong>
+                Unlock badges as you use the system and hit milestones!
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- HARDWARE SETUP -->
+        <section class="doc-section" id="hardware-setup">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-microchip"></i></div>
+            <h2 class="doc-section-title">Hardware Setup</h2>
+          </div>
+          <p class="doc-text">
+            The Smart Energy Meter uses <strong>ESP32</strong> as the main controller with voltage and current sensors.
+          </p>
+
+          <p class="doc-text"><strong>Required Components:</strong></p>
+          <ul class="feature-list">
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>ESP32 DevKit</strong> - Microcontroller with WiFi</div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>ZMPT101B</strong> - Voltage sensor module (0-250V AC)</div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>ZMCT103C</strong> - Current sensor (0-5A)</div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>5V Relay Module</strong> - For remote switching</div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>Jumper Wires + Breadboard</strong></div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle feature-check"></i>
+              <div class="feature-text"><strong>USB Cable</strong> - For programming ESP32</div>
+            </li>
+          </ul>
+
+          <div class="info-box warning">
+            <i class="fas fa-exclamation-triangle info-icon"></i>
+            <div class="info-text">
+              <strong>Safety Warning:</strong> Working with AC mains voltage (230V) is dangerous. Always ensure the power is OFF before making any connections. If unsure, seek help from a qualified electrician.
+            </div>
+          </div>
+
+          <p class="doc-text"><strong>Pin Connections (ESP32):</strong></p>
+          <div class="code-block">
+            <span class="code-label">WIRING</span>
+<pre>ZMPT101B (Voltage)  → GPIO 34
+ZMCT103C (Current)  → GPIO 35
+Relay Module IN     → GPIO 26
+Common VCC          → 3.3V / 5V
+Common GND          → GND</pre>
+          </div>
+        </section>
+
+        <!-- UNDERSTANDING DATA -->
+        <section class="doc-section" id="understanding-data">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-chart-line"></i></div>
+            <h2 class="doc-section-title">Reading the Data</h2>
+          </div>
+          <p class="doc-text">
+            Understanding what each measurement means will help you make sense of your consumption patterns.
+          </p>
+
+          <ul class="feature-list">
+            <li>
+              <i class="fas fa-bolt feature-check" style="color:var(--primary);"></i>
+              <div class="feature-text">
+                <strong>Voltage (V)</strong>
+                Standard India supply is 230V ± 10%. Values outside 200-250V may cause damage.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-wave-square feature-check"></i>
+              <div class="feature-text">
+                <strong>Current (A)</strong>
+                Amount of electricity flowing. Higher current = more devices running.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-tachometer-alt feature-check" style="color:var(--amber);"></i>
+              <div class="feature-text">
+                <strong>Power (W)</strong>
+                Real-time consumption. Formula: Power = Voltage × Current.
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-chart-area feature-check" style="color:var(--purple);"></i>
+              <div class="feature-text">
+                <strong>Energy (kWh)</strong>
+                Total consumption over time. This is what your electricity bill is based on.
+              </div>
+            </li>
+          </ul>
+
+          <div class="info-box">
+            <i class="fas fa-info-circle info-icon"></i>
+            <div class="info-text">
+              <strong>Example:</strong> A 60W bulb running for 10 hours consumes <code>60W × 10h = 600Wh = 0.6 kWh</code>. At ₹6.5/kWh, that's ₹3.90 per day.
+            </div>
+          </div>
+        </section>
+
+        <!-- RELAY CONTROL -->
+        <section class="doc-section" id="relay-control">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-toggle-on"></i></div>
+            <h2 class="doc-section-title">Relay Control</h2>
+          </div>
+          <p class="doc-text">
+            The relay lets you turn your connected device ON or OFF remotely from anywhere.
+          </p>
+
+          <ol class="step-list">
+            <li>
+              <div class="step-content">
+                <div class="step-title">Locate the Relay Toggle</div>
+                <div class="step-desc">On the dashboard, find the <strong>"Relay Control"</strong> card.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Toggle ON/OFF</div>
+                <div class="step-desc">Click the switch to change state. Green = ON, Red = OFF.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Confirmation</div>
+                <div class="step-desc">A toast notification will confirm the action was successful.</div>
+              </div>
+            </li>
+          </ol>
+
+          <div class="info-box danger">
+            <i class="fas fa-exclamation-circle info-icon"></i>
+            <div class="info-text">
+              <strong>Important:</strong> The relay should only be used with devices under its rated current capacity (usually 10A). For high-power appliances (AC, water heater), use a contactor with proper isolation.
+            </div>
+          </div>
+        </section>
+
+        <!-- TARIFF BILLING -->
+        <section class="doc-section" id="tariff-billing">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-rupee-sign"></i></div>
+            <h2 class="doc-section-title">Tariff & Billing</h2>
+          </div>
+          <p class="doc-text">
+            The system automatically calculates your electricity bill based on the tariff rate you set.
+          </p>
+
+          <p class="doc-text"><strong>How Billing Works:</strong></p>
+          <div class="code-block">
+            <span class="code-label">FORMULA</span>
+<pre>Daily Bill   = Energy (kWh) × Tariff (₹/kWh)
+Monthly Bill = Daily Bill × 30
+Total Cost   = Energy Consumed × Your Tariff</pre>
+          </div>
+
+          <p class="doc-text"><strong>Setting Your Tariff:</strong></p>
+          <ol class="step-list">
+            <li>
+              <div class="step-content">
+                <div class="step-title">Go to Profile Page</div>
+                <div class="step-desc">Click on <strong>Profile</strong> in the sidebar.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Find Tariff Settings</div>
+                <div class="step-desc">Click <strong>Edit Profile</strong> and adjust the slider or type manually.</div>
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <div class="step-title">Save Changes</div>
+                <div class="step-desc">Click <strong>Update Tariff</strong> to save. Bills will recalculate instantly.</div>
+              </div>
+            </li>
+          </ol>
+
+          <div class="info-box">
+            <i class="fas fa-lightbulb info-icon"></i>
+            <div class="info-text">
+              <strong>Tip:</strong> Check your last electricity bill for the exact tariff rate in your area. Rates vary by state and consumption slab.
+            </div>
+          </div>
+        </section>
+
+        <!-- EXPORT DATA -->
+        <section class="doc-section" id="export-data">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-download"></i></div>
+            <h2 class="doc-section-title">Exporting Data</h2>
+          </div>
+          <p class="doc-text">
+            Download your energy data for reports, analysis or record-keeping.
+          </p>
+
+          <ul class="feature-list">
+            <li>
+              <i class="fas fa-file-csv feature-check"></i>
+              <div class="feature-text">
+                <strong>CSV Export</strong>
+                Downloads all readings as spreadsheet (opens in Excel).
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-file-pdf feature-check" style="color:var(--danger);"></i>
+              <div class="feature-text">
+                <strong>PDF Report</strong>
+                Beautiful formatted report with charts and stats.
+              </div>
+            </li>
+          </ul>
+
+          <p class="doc-text">
+            Both options are available in the <strong>Quick Actions</strong> bar at the top of the dashboard.
+          </p>
+        </section>
+
+        <!-- TROUBLESHOOTING -->
+        <section class="doc-section" id="troubleshooting">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-wrench"></i></div>
+            <h2 class="doc-section-title">Troubleshooting</h2>
+          </div>
+          <p class="doc-text">
+            Facing an issue? Here are quick fixes for common problems.
+          </p>
+
+          <div class="trouble-grid">
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-wifi"></i></div>
+                <div class="trouble-title">Device shows Offline</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Check WiFi credentials in ESP32 code. Verify router is on. Restart device by unplugging for 10 seconds.
+              </div>
+            </div>
+
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-signal"></i></div>
+                <div class="trouble-title">All values show 0</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Hardware may not be connected to AC. Values only update when device is powered by mains supply.
+              </div>
+            </div>
+
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="trouble-title">Cannot Login</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Verify email/password. Use "Forgot Password" if needed. Check if your domain is authorized in Firebase Console.
+              </div>
+            </div>
+
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-toggle-off"></i></div>
+                <div class="trouble-title">Relay not responding</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Check ESP32 pin connections. Verify relay module has power. Refresh dashboard and try again.
+              </div>
+            </div>
+
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-chart-bar"></i></div>
+                <div class="trouble-title">Graphs not updating</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Refresh the page. Check internet connection. Ensure Firebase database rules allow read access.
+              </div>
+            </div>
+
+            <div class="trouble-card">
+              <div class="trouble-header">
+                <div class="trouble-icon-sm"><i class="fas fa-camera"></i></div>
+                <div class="trouble-title">Photo upload fails</div>
+              </div>
+              <div class="trouble-fix">
+                <strong>Fix:</strong> Image must be under 2MB. Enable Firebase Storage in your project. Check Storage rules.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="doc-section" id="faq">
+          <div class="doc-section-header">
+            <div class="doc-section-icon"><i class="fas fa-question-circle"></i></div>
+            <h2 class="doc-section-title">Frequently Asked Questions</h2>
+          </div>
+
+          <div class="faq-list">
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Is Smart Energy Meter really free?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                Yes! The web platform is 100% free. You only need to buy the hardware components (ESP32 + sensors) which cost around ₹800-1200 total.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Is my data secure?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                Yes. We use Firebase Authentication (Google-owned) with industry-standard security. Your data is encrypted in transit (HTTPS) and only you can access your account.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How accurate are the readings?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                The ZMPT101B and ZMCT103C sensors provide ±1% accuracy for voltage and ±2% for current when calibrated properly. Suitable for household monitoring but not for commercial billing.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Can I use it for multiple devices?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                Currently one ESP32 per account (device001). You can install it on your main power line to monitor total home consumption, or on specific circuits.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Does it work without internet?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                The hardware needs WiFi to send data to Firebase. Without internet, values won't update on the dashboard. However, the ESP32 buffers data locally and syncs when connection returns.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Can I export data for analysis?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                Yes! Use the "Export CSV" button on the dashboard to download all readings. You can also generate a PDF report with charts included.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How do I change my tariff rate?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                Go to Profile → Tariff Settings → Click Edit → Adjust slider or enter manually → Save. Bill calculations update immediately.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What browsers are supported?</span>
+                <i class="fas fa-plus faq-toggle"></i>
+              </div>
+              <div class="faq-answer">
+                All modern browsers: Chrome, Firefox, Edge, Safari, Opera. Works on desktop, tablet and mobile. For best experience, use latest version of Chrome.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HELP FOOTER -->
+        <div class="help-footer">
+          <i class="fas fa-envelope"></i>
+          <h3>Need More Help?</h3>
+          <p>Can't find what you're looking for? Reach out to our team.</p>
+          <p>Contact your project team at <a href="mailto:om.pandey@example.com">om.pandey@example.com</a></p>
+        </div>
+
+      </div><!-- /docs-content -->
+    </div><!-- /docs-layout -->
+
+    <!-- FOOTER -->
+    <div class="dash-footer">
+      <p>© 2025 <span>Smart Energy Meter</span> · Government Polytechnic College, Sangareddy · Designed by <span>Om Pandey</span></p>
+    </div>
+
+  </main>
+
+  <!-- SCRIPTS -->
+  <script src="js/theme.js"></script>
+  <script src="js/logo.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
+      authDomain: "smartenergymeter-dd01b.firebaseapp.com",
+      projectId: "smartenergymeter-dd01b",
+      storageBucket: "smartenergymeter-dd01b.firebasestorage.app",
+      messagingSenderId: "299635627523",
+      appId: "1:299635627523:web:fd8375e25803015e0de036"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const name = user.displayName || 'User';
+        document.getElementById('sidebarName').textContent = name;
+        document.getElementById('sidebarEmail').textContent = user.email || '';
+        document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+      }
+      setTimeout(() => { document.getElementById('loadingScreen').classList.add('hide'); }, 600);
+    });
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'login.html'; });
+    };
+  </script>
+  <script>
+    /* FAQ toggle */
+    function toggleFaq(el) {
+      el.parentElement.classList.toggle('open');
+    }
+
+    /* Sidebar */
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+
+    /* Active TOC link on scroll */
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    const sections = document.querySelectorAll('.doc-section');
+
+    window.addEventListener('scroll', () => {
+      let currentSection = '';
+      sections.forEach(sec => {
+        const top = sec.getBoundingClientRect().top;
+        if (top < 120) currentSection = sec.id;
+      });
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + currentSection) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    /* Smooth scroll for TOC links */
+    tocLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          window.scrollTo({
+            top: target.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
