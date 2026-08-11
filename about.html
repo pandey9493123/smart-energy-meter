@@ -345,112 +345,6 @@
     }
 
     /* ============================================================
-       TIMELINE SECTION
-    ============================================================ */
-    .timeline-section {
-      margin-bottom: 50px;
-    }
-    .section-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .section-tag {
-      display: inline-block;
-      background: rgba(6,182,212,0.1);
-      border: 1px solid rgba(6,182,212,0.25);
-      color: var(--primary);
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 15px;
-    }
-    .section-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.5rem, 4vw, 2.2rem);
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .section-title .highlight {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .timeline {
-      position: relative;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 100%;
-      background: linear-gradient(180deg, var(--primary), var(--accent));
-      opacity: 0.3;
-    }
-    .timeline-item {
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 50%;
-      position: relative;
-      margin-bottom: 30px;
-    }
-    .timeline-item:nth-child(even) {
-      justify-content: flex-start;
-      padding-right: 0;
-      padding-left: 50%;
-    }
-    .timeline-content {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px 25px;
-      width: 90%;
-      position: relative;
-      transition: all var(--transition-base);
-    }
-    .timeline-content:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-3px);
-    }
-    .timeline-item:nth-child(odd) .timeline-content { margin-right: 20px; }
-    .timeline-item:nth-child(even) .timeline-content { margin-left: 20px; }
-    .timeline-dot {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 16px; height: 16px;
-      background: var(--gradient-primary);
-      border-radius: 50%;
-      border: 3px solid var(--bg-primary);
-      box-shadow: var(--glow-primary);
-      z-index: 2;
-    }
-    .timeline-date {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.8rem;
-      color: var(--primary);
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    .timeline-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-    .timeline-desc {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    /* ============================================================
        TEAM SECTION (Extended)
     ============================================================ */
     .team-section { margin-bottom: 50px; }
@@ -575,77 +469,6 @@
     }
 
     /* ============================================================
-       FACULTY SECTION
-    ============================================================ */
-    .faculty-section {
-      background: var(--bg-secondary);
-      border-radius: var(--radius-xl);
-      padding: 50px 30px;
-      margin-bottom: 50px;
-      position: relative;
-      overflow: hidden;
-    }
-    .faculty-section::before {
-      content: '';
-      position: absolute;
-      top: -100px; right: -100px;
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
-    }
-    .faculty-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 30px;
-      max-width: 800px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-    .faculty-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      text-align: center;
-      transition: all var(--transition-base);
-    }
-    .faculty-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--purple);
-      box-shadow: 0 10px 30px rgba(139,92,246,0.1);
-    }
-    .faculty-avatar {
-      width: 80px; height: 80px;
-      background: linear-gradient(135deg, #8B5CF6, #EC4899);
-      border-radius: 50%;
-      margin: 0 auto 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: 0 0 20px rgba(139,92,246,0.3);
-    }
-    .faculty-role {
-      font-size: 0.75rem;
-      color: var(--purple);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    .faculty-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-    .faculty-dept {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    /* ============================================================
        TECH STACK DETAILED
     ============================================================ */
     .tech-section { margin-bottom: 50px; }
@@ -732,15 +555,6 @@
       .topbar { left: 0; }
       .main { margin-left: 0; }
       .hamburger { display: block; }
-      .timeline::before { left: 20px; }
-      .timeline-item,
-      .timeline-item:nth-child(even) {
-        justify-content: flex-start;
-        padding-left: 50px;
-        padding-right: 0;
-      }
-      .timeline-content { margin-left: 0; margin-right: 0; width: 100%; }
-      .timeline-dot { left: 20px; transform: none; }
     }
   </style>
 </head>
@@ -842,56 +656,6 @@
       </div>
     </div>
 
-    <!-- TIMELINE -->
-    <section class="timeline-section">
-      <div class="section-header">
-        <span class="section-tag">Journey</span>
-        <h2 class="section-title">Project <span class="highlight">Timeline</span></h2>
-      </div>
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">August 2024</div>
-            <div class="timeline-title">Project Initiation</div>
-            <div class="timeline-desc">Team formation, requirement analysis, and initial planning phase.</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">September 2024</div>
-            <div class="timeline-title">Hardware Assembly</div>
-            <div class="timeline-desc">ESP32 programming, sensor calibration, and circuit design.</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">October 2024</div>
-            <div class="timeline-title">Cloud Integration</div>
-            <div class="timeline-desc">Firebase setup, Blynk IoT configuration, and real-time data sync.</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">November 2024</div>
-            <div class="timeline-title">Dashboard Development</div>
-            <div class="timeline-desc">Web interface design, chart implementation, and responsive UI.</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">December 2024</div>
-            <div class="timeline-title">Testing & Deployment</div>
-            <div class="timeline-desc">Field testing, bug fixes, and final deployment on Netlify.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- TEAM -->
     <section class="team-section">
       <div class="section-header">
@@ -964,28 +728,6 @@
           <div class="team-social">
             <a href="#"><i class="fas fa-envelope"></i></a>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FACULTY -->
-    <section class="faculty-section">
-      <div class="section-header">
-        <span class="section-tag">Guidance</span>
-        <h2 class="section-title">Project <span class="highlight">Mentors</span></h2>
-      </div>
-      <div class="faculty-grid">
-        <div class="faculty-card">
-          <div class="faculty-avatar">👨‍🏫</div>
-          <div class="faculty-role">Project Guide</div>
-          <div class="faculty-name">Mr. [Faculty Name]</div>
-          <div class="faculty-dept">Department of Electrical Engineering<br/>Government Polytechnic College, Sangareddy</div>
-        </div>
-        <div class="faculty-card">
-          <div class="faculty-avatar">👩‍🏫</div>
-          <div class="faculty-role">HOD</div>
-          <div class="faculty-name">Mr. [HOD Name]</div>
-          <div class="faculty-dept">Head of Department<br/>Electrical Engineering</div>
         </div>
       </div>
     </section>
