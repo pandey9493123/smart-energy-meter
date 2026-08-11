@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <meta name="theme-color" content="#0B1120"/>
   <title>Login – Smart Energy Meter</title>
   <meta name="description" content="Login to your Smart Energy Meter dashboard"/>
@@ -18,1063 +18,364 @@
 
   <style>
     /* ============================================================
-       PAGE LAYOUT
+       3D BACKGROUND & GLASSMORPHISM LAYOUT
     ============================================================ */
-    body {
+    body, html {
       overflow-x: hidden;
-    }
-
-    .auth-wrapper {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      background: #050d1a; 
+      margin: 0;
+      padding: 0;
       min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
     }
 
-    /* ============================================================
-       LEFT PANEL – VISUAL
-    ============================================================ */
-    .auth-left {
+    /* 3D Floating Orbs for depth */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: floatOrbs 20s infinite alternate ease-in-out;
+    }
+    .orb-1 { width: 40vw; height: 40vw; background: #06B6D4; top: -10%; left: -5%; min-width: 300px; min-height: 300px; }
+    .orb-2 { width: 50vw; height: 50vw; background: #10F5A0; bottom: -20%; right: -10%; min-width: 350px; min-height: 350px; animation-delay: -5s; }
+    .orb-3 { width: 35vw; height: 35vw; background: #8B5CF6; top: 30%; left: 40%; min-width: 250px; min-height: 250px; animation-delay: -10s; }
+
+    @keyframes floatOrbs {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 30px) scale(1.1); }
+    }
+
+    /* Main Centered Wrapper */
+    .auth-wrapper {
       position: relative;
-      background: var(--gradient-hero);
+      z-index: 10;
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px 50px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* The Glass Card */
+    .glass-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(11, 17, 32, 0.45); 
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255,255,255,0.05);
       overflow: hidden;
     }
 
-    /* Animated grid */
-    .auth-left::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(6,182,212,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6,182,212,0.06) 1px, transparent 1px);
-      background-size: 50px 50px;
-      animation: gridMove 20s linear infinite;
-    }
-    @keyframes gridMove {
-      100% { transform: translateY(50px); }
-    }
-
-    /* Radial glow */
-    .auth-left::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Back to home link */
-    .back-home {
-      position: absolute;
-      top: 25px; left: 25px;
+    /* ============================================================
+       LEFT PANEL – VISUAL (Hidden on Mobile/Tablet)
+    ============================================================ */
+    .auth-left {
+      position: relative;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.85rem;
-      transition: color 0.3s ease;
-      z-index: 5;
+      justify-content: center;
+      padding: 50px 40px;
+      background: rgba(6, 182, 212, 0.05); 
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .back-home {
+      position: absolute; top: 25px; left: 25px;
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.7); text-decoration: none;
+      font-size: 0.85rem; transition: color 0.3s ease; z-index: 5;
     }
     .back-home:hover { color: var(--primary); }
 
-    /* Theme toggle on left panel */
-    .left-theme-toggle {
-      position: absolute;
-      top: 25px; right: 25px;
-      z-index: 5;
-    }
-
-    /* Left content */
-    .left-content {
-      position: relative;
-      z-index: 5;
-      text-align: center;
-      max-width: 420px;
-    }
-
-    /* Brand logo */
-    .brand-logo-wrap {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
-    }
+    .left-content { position: relative; z-index: 5; text-align: center; max-width: 420px; }
+    .brand-logo-wrap { display: flex; justify-content: center; margin-bottom: 30px; }
 
     /* Central animated meter */
     .left-meter-wrap {
-      position: relative;
-      width: 240px; height: 240px;
-      margin: 0 auto 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative; width: 220px; height: 220px; margin: 0 auto 30px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .l-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 2px solid transparent;
-    }
-    .l-ring-1 {
-      width: 240px; height: 240px;
-      border-top-color: var(--primary);
-      border-right-color: var(--primary);
-      animation: spin 4s linear infinite;
-      box-shadow: 0 0 15px rgba(6,182,212,0.3);
-    }
-    .l-ring-2 {
-      width: 180px; height: 180px;
-      border-bottom-color: var(--accent);
-      border-left-color: var(--accent);
-      animation: spin 3s linear infinite reverse;
-      box-shadow: 0 0 12px rgba(16,245,160,0.3);
-    }
-    .l-ring-3 {
-      width: 130px; height: 130px;
-      border-top-color: var(--amber);
-      border-right-color: var(--amber);
-      animation: spin 2s linear infinite;
-      box-shadow: 0 0 10px rgba(245,158,11,0.3);
-    }
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
+    .l-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; }
+    .l-ring-1 { width: 100%; height: 100%; border-top-color: var(--primary); border-right-color: var(--primary); animation: spin 4s linear infinite; }
+    .l-ring-2 { width: 75%; height: 75%; border-bottom-color: var(--accent); border-left-color: var(--accent); animation: spin 3s linear infinite reverse; }
+    .l-ring-3 { width: 55%; height: 55%; border-top-color: var(--amber); border-right-color: var(--amber); animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
     .l-center {
-      position: relative;
-      z-index: 5;
-      width: 100px; height: 100px;
-      background: var(--bg-secondary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--border-hover);
-      box-shadow: 0 0 30px rgba(6,182,212,0.2), inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative; z-index: 5; width: 45%; height: 45%;
+      background: rgba(11, 17, 32, 0.6); backdrop-filter: blur(10px);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(6,182,212,0.5); box-shadow: 0 0 30px rgba(6,182,212,0.2);
     }
 
-    .left-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.3rem, 3vw, 1.8rem);
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 15px;
-      color: var(--text-primary);
-    }
-    .left-title .highlight {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .left-desc {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 30px;
-    }
+    .left-title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .left-title .highlight { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .left-desc { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 25px; }
 
-    /* Feature bullets */
-    .left-features {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      text-align: left;
-    }
+    .left-features { display: flex; flex-direction: column; gap: 8px; text-align: left; }
     .left-feature-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      transition: all 0.3s ease;
-    }
-    .left-feature-item:hover {
-      border-color: var(--border-hover);
-      transform: translateX(5px);
-    }
-    .left-feature-item i {
-      color: var(--accent);
-      font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-
-    /* Floating particles */
-    .left-particle {
-      position: absolute;
-      border-radius: 50%;
-      animation: floatUp linear infinite;
-      opacity: 0;
-    }
-    @keyframes floatUp {
-      0%   { transform: translateY(100vh); opacity: 0; }
-      10%  { opacity: 0.6; }
-      90%  { opacity: 0.6; }
-      100% { transform: translateY(-100px); opacity: 0; }
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.8rem;
+      color: rgba(255,255,255,0.8); transition: all 0.3s ease;
     }
 
     /* ============================================================
        RIGHT PANEL – FORM
     ============================================================ */
     .auth-right {
-      background: var(--bg-secondary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 50px;
-      position: relative;
-      overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 50px 40px; position: relative; width: 100%; box-sizing: border-box;
     }
 
-    .auth-right::before {
-      content: '';
-      position: absolute;
-      top: -100px; right: -100px;
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(16,245,160,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
+    .form-container { width: 100%; max-width: 400px; position: relative; z-index: 2; }
+    .mobile-brand { display: none; justify-content: center; margin-bottom: 20px; }
 
-    .form-container {
-      width: 100%;
-      max-width: 420px;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* Mobile-only brand */
-    .mobile-brand {
-      display: none;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-
-    /* Form header */
-    .form-header {
-      margin-bottom: 32px;
-    }
+    .form-header { margin-bottom: 25px; text-align: left; }
     .form-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(6,182,212,0.1);
-      border: 1px solid rgba(6,182,212,0.25);
-      color: var(--primary);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 15px;
-      font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3);
+      color: var(--primary); padding: 4px 12px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 600; margin-bottom: 10px; text-transform: uppercase;
     }
-    .form-tag-dot {
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { transform: scale(1); opacity: 1; }
-      50%     { transform: scale(1.5); opacity: 0.5; }
-    }
-    .form-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.4rem, 3vw, 1.9rem);
-      font-weight: 700;
-      margin-bottom: 8px;
-      line-height: 1.2;
-      color: var(--text-primary);
-    }
-    .form-title span {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .form-subtitle {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-    }
+    .form-tag-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+    
+    .form-title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.3rem, 4vw, 1.8rem); font-weight: 700; margin-bottom: 5px; color: #fff; }
+    .form-title span { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .form-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
 
-    /* ============================================================
-       GOOGLE BUTTON
-    ============================================================ */
+    /* Google Button */
     .btn-google {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 13px 20px;
-      background: var(--bg-hover);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 22px;
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md); color: #fff; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.3s; margin-bottom: 20px;
     }
-    .btn-google:hover {
-      background: var(--bg-tertiary);
-      border-color: var(--border-hover);
-      transform: translateY(-2px);
-    }
-    .google-icon {
-      width: 20px; height: 20px;
-    }
+    .btn-google:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+    .google-icon { width: 18px; height: 18px; }
 
-    /* OR Divider */
-    .or-divider {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 22px;
-    }
-    .or-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-    .or-text {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
+    .or-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .or-line { flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+    .or-text { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; }
 
-    /* ============================================================
-       FORM FIELDS
-    ============================================================ */
-    .form-group {
-      margin-bottom: 18px;
-      position: relative;
-    }
-    .form-label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 7px;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .form-label i {
-      color: var(--primary);
-      font-size: 0.85rem;
-    }
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .input-icon {
-      position: absolute;
-      left: 15px;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      pointer-events: none;
-      z-index: 2;
-      transition: color 0.3s ease;
-    }
+    /* Inputs */
+    .form-group { margin-bottom: 15px; position: relative; }
+    .form-label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 5px; }
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+    .input-icon { position: absolute; left: 12px; color: rgba(255,255,255,0.4); font-size: 0.85rem; z-index: 2; transition: 0.3s; }
+    
     .form-input {
-      width: 100%;
-      padding: 12px 45px 12px 42px;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.88rem;
-      transition: all 0.3s ease;
-      outline: none;
+      width: 100%; padding: 10px 40px 10px 35px; box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md); color: #fff; font-size: 0.85rem; outline: none; transition: 0.3s;
     }
-    .form-input::placeholder {
-      color: var(--text-muted);
-      font-size: 0.83rem;
-    }
-    .form-input:focus {
-      border-color: var(--primary);
-      background: var(--bg-card-solid);
-      box-shadow: 0 0 0 3px rgba(6,182,212,0.1), var(--glow-primary);
-    }
-    .form-group:focus-within .input-icon {
-      color: var(--primary);
-    }
-    .password-toggle {
-      position: absolute;
-      right: 15px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 0;
-      transition: color 0.3s ease;
-      z-index: 2;
-    }
-    .password-toggle:hover { color: var(--primary); }
+    .form-input:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.08); }
+    .form-group:focus-within .input-icon { color: var(--primary); }
+    .password-toggle { position: absolute; right: 12px; background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; z-index: 2; }
+    
+    .form-extras { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .remember-me input { display: none; }
+    .custom-checkbox { width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+    .remember-me input:checked + .custom-checkbox { background: var(--primary); border-color: var(--primary); }
+    .remember-me input:checked + .custom-checkbox::after { content: '✓'; font-size: 0.6rem; color: white; }
+    .remember-label { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+    .forgot-link { font-size: 0.75rem; color: var(--primary); text-decoration: none; }
 
-    /* Error */
-    .field-error {
-      display: none;
-      font-size: 0.73rem;
-      color: var(--danger);
-      margin-top: 5px;
-      padding-left: 5px;
-      align-items: center;
-      gap: 5px;
-    }
-    .field-error.show { display: flex; }
-    .form-input.error {
-      border-color: var(--danger);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.1);
-    }
-
-    /* ============================================================
-       EXTRAS – REMEMBER ME + FORGOT
-    ============================================================ */
-    .form-extras {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 22px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .remember-me {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .remember-me input[type="checkbox"] { display: none; }
-    .custom-checkbox {
-      width: 18px; height: 18px;
-      border: 1.5px solid var(--border);
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
-    }
-    .remember-me input:checked + .custom-checkbox {
-      background: var(--primary);
-      border-color: var(--primary);
-    }
-    .remember-me input:checked + .custom-checkbox::after {
-      content: '✓';
-      font-size: 0.7rem;
-      color: white;
-    }
-    .remember-label {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      user-select: none;
-    }
-    .forgot-link {
-      font-size: 0.82rem;
-      color: var(--primary);
-      text-decoration: none;
-      transition: color 0.3s ease;
-      font-weight: 500;
-    }
-    .forgot-link:hover {
-      color: var(--accent);
-      text-decoration: underline;
-    }
-
-    /* ============================================================
-       SUBMIT BUTTON
-    ============================================================ */
     .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background: var(--gradient-primary);
-      border: none;
-      border-radius: var(--radius-md);
-      color: var(--bg-primary);
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: var(--glow-primary);
-      margin-bottom: 22px;
-      position: relative;
-      overflow: hidden;
+      width: 100%; padding: 12px; background: var(--gradient-primary); border: none; border-radius: var(--radius-md);
+      color: #0B1120; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
     }
-    .btn-submit::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.5s ease;
-    }
-    .btn-submit:hover::before { left: 100%; }
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--glow-primary-lg);
-    }
-    .btn-submit:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .spinner-inline {
-      display: none;
-      width: 18px; height: 18px;
-      border: 2px solid rgba(0,0,0,0.3);
-      border-top-color: var(--bg-primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: var(--glow-primary); }
+
+    .form-switch { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 15px; }
+    .form-switch a { color: var(--primary); text-decoration: none; font-weight: 600; }
 
     /* ============================================================
-       FORM SWITCH LINK
+       RESPONSIVE MEDIA QUERIES
     ============================================================ */
-    .form-switch {
-      text-align: center;
-      font-size: 0.87rem;
-      color: var(--text-muted);
-    }
-    .form-switch a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-    .form-switch a:hover { color: var(--accent); }
-
-    /* ============================================================
-       FORGOT PASSWORD MODAL
-    ============================================================ */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      z-index: 9998;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 40px 35px;
-      width: 100%;
-      max-width: 420px;
-      position: relative;
-      animation: modalIn 0.3s ease;
-    }
-    @keyframes modalIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
-    .modal-close {
-      position: absolute;
-      top: 18px; right: 18px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: color 0.3s ease;
-    }
-    .modal-close:hover { color: var(--danger); }
-    .modal-icon {
-      width: 60px; height: 60px;
-      background: rgba(6,182,212,0.15);
-      border: 1px solid rgba(6,182,212,0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: var(--primary);
-      margin: 0 auto 20px;
-    }
-    .modal-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-    .modal-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 25px;
-      line-height: 1.6;
-    }
-
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
-    @media (max-width: 768px) {
-      .auth-wrapper { grid-template-columns: 1fr; }
+    /* Tablets (Hide left panel, center the card) */
+    @media (max-width: 850px) {
+      .glass-card { grid-template-columns: 1fr; max-width: 450px; }
       .auth-left { display: none; }
-      .auth-right { padding: 50px 30px; min-height: 100vh; }
       .mobile-brand { display: flex; }
-      /* Mobile theme toggle */
-      .right-theme-toggle {
-        position: absolute;
-        top: 20px; right: 20px;
-      }
+      .back-home { top: -30px; left: 0; font-size: 0.8rem; }
+      .auth-wrapper { padding-top: 60px; } /* Space for back button */
     }
-    @media (min-width: 769px) {
-      .right-theme-toggle { display: none; }
-    }
+
+    /* Small Mobile Phones */
     @media (max-width: 480px) {
-      .auth-right { padding: 40px 20px; }
+      .auth-wrapper { padding: 15px; }
+      .glass-card { border-radius: 20px; }
+      .auth-right { padding: 30px 20px; }
+      .form-title { font-size: 1.4rem; }
+      .btn-google, .btn-submit, .form-input { padding: 10px; font-size: 0.8rem; }
+      .form-extras { flex-direction: row; justify-content: space-between; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- FORGOT PASSWORD MODAL -->
-  <div class="modal-overlay" id="forgotModal">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeForgotModal()">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="modal-icon"><i class="fas fa-key"></i></div>
-      <h3 class="modal-title">Reset Password</h3>
-      <p class="modal-desc">
-        Enter your registered email address and we'll send you a password reset link.
-      </p>
-
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-envelope"></i> Email Address</label>
-        <div class="input-wrapper">
-          <i class="fas fa-envelope input-icon"></i>
-          <input type="email" class="form-input" id="resetEmail" placeholder="your@email.com"/>
-        </div>
-      </div>
-
-      <button class="btn-submit" id="resetBtn" onclick="sendResetEmail()">
-        <i class="fas fa-paper-plane"></i>
-        <span id="resetBtnText">Send Reset Link</span>
-        <div class="spinner-inline" id="resetSpinner"></div>
-      </button>
-    </div>
+  <!-- 3D ORB BACKGROUND -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
   </div>
 
-  <!-- ============================================================
-       MAIN WRAPPER
-  ============================================================ -->
+  <!-- MAIN WRAPPER -->
   <div class="auth-wrapper">
+    <div class="glass-card">
 
-    <!-- ========================================================
-         LEFT PANEL
-    ======================================================== -->
-    <div class="auth-left">
-      <a href="index.html" class="back-home">
-        <i class="fas fa-arrow-left"></i> Back to Home
-      </a>
-
-      <!-- Theme toggle top right of left panel -->
-      <div class="left-theme-toggle">
-        <button class="theme-toggle" aria-label="Toggle theme">
-          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Floating particles -->
-      <div class="left-particle" style="width:4px;height:4px;background:#06B6D4;left:10%;animation-duration:8s;"></div>
-      <div class="left-particle" style="width:3px;height:3px;background:#10F5A0;left:30%;animation-duration:6s;animation-delay:2s;"></div>
-      <div class="left-particle" style="width:5px;height:5px;background:#F59E0B;left:60%;animation-duration:9s;animation-delay:1s;"></div>
-      <div class="left-particle" style="width:3px;height:3px;background:#06B6D4;left:80%;animation-duration:7s;animation-delay:3s;"></div>
-      <div class="left-particle" style="width:4px;height:4px;background:#10F5A0;left:45%;animation-duration:10s;animation-delay:0.5s;"></div>
-
-      <div class="left-content">
-        <!-- Brand Logo -->
-        <div class="brand-logo-wrap" data-logo="full" data-height="42"></div>
-
-        <!-- Animated Meter -->
-        <div class="left-meter-wrap">
-          <div class="l-ring l-ring-1"></div>
-          <div class="l-ring l-ring-2"></div>
-          <div class="l-ring l-ring-3"></div>
-          <div class="l-center" data-logo="icon" data-size="70"></div>
-        </div>
-
-        <!-- Title -->
-        <h2 class="left-title">
-          Welcome <span class="highlight">Back!</span>
-        </h2>
-        <p class="left-desc">
-          Login to access your real-time energy dashboard,
-          monitor live readings and control your smart meter.
-        </p>
-
-        <!-- Features -->
-        <div class="left-features">
-          <div class="left-feature-item">
-            <i class="fas fa-bolt"></i>
-            Real-time Voltage, Current & Power
+      <!-- LEFT PANEL (Only visible on Desktop) -->
+      <div class="auth-left">
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back</a>
+        <div class="left-content">
+          <div class="brand-logo-wrap" data-logo="full" data-height="35"></div>
+          <div class="left-meter-wrap">
+            <div class="l-ring l-ring-1"></div>
+            <div class="l-ring l-ring-2"></div>
+            <div class="l-ring l-ring-3"></div>
+            <div class="l-center" data-logo="icon" data-size="50"></div>
           </div>
-          <div class="left-feature-item">
-            <i class="fas fa-chart-line"></i>
-            Live graphs updating every second
-          </div>
-          <div class="left-feature-item">
-            <i class="fas fa-rupee-sign"></i>
-            Daily & Monthly bill estimation
-          </div>
-          <div class="left-feature-item">
-            <i class="fas fa-shield-alt"></i>
-            Instant fault detection alerts
-          </div>
+          <h2 class="left-title">Welcome <span class="highlight">Back!</span></h2>
+          <p class="left-desc">Login to access your real-time energy dashboard and monitor live readings.</p>
         </div>
       </div>
-    </div>
 
-    <!-- ========================================================
-         RIGHT PANEL – FORM
-    ======================================================== -->
-    <div class="auth-right">
+      <!-- RIGHT PANEL (FORM - Visible on all devices) -->
+      <div class="auth-right">
+        <!-- Back button visible only on mobile -->
+        <a href="index.html" class="back-home" style="display: none;"><i class="fas fa-arrow-left"></i> Back</a>
 
-      <!-- Mobile theme toggle -->
-      <div class="right-theme-toggle">
-        <button class="theme-toggle" aria-label="Toggle theme">
-          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
-      </div>
+        <div class="form-container">
+          <div class="mobile-brand" data-logo="full" data-height="35"></div>
 
-      <div class="form-container">
-
-        <!-- Mobile brand -->
-        <div class="mobile-brand" data-logo="full" data-height="42"></div>
-
-        <!-- Header -->
-        <div class="form-header">
-          <div class="form-tag">
-            <span class="form-tag-dot"></span>
-            Secure Login
-          </div>
-          <h1 class="form-title">Sign In to <span>Dashboard</span></h1>
-          <p class="form-subtitle">Access your smart energy monitoring system</p>
-        </div>
-
-        <!-- Google Sign-in -->
-        <button class="btn-google" onclick="googleLogin()">
-          <svg class="google-icon" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Continue with Google
-        </button>
-
-        <!-- Divider -->
-        <div class="or-divider">
-          <div class="or-line"></div>
-          <span class="or-text">or sign in with email</span>
-          <div class="or-line"></div>
-        </div>
-
-        <!-- Login Form -->
-        <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
-
-          <!-- Email -->
-          <div class="form-group" id="emailGroup">
-            <label class="form-label" for="email">
-              <i class="fas fa-envelope"></i> Email Address
-            </label>
-            <div class="input-wrapper">
-              <i class="fas fa-envelope input-icon"></i>
-              <input type="email" class="form-input" id="email" placeholder="your@email.com" autocomplete="email"/>
-            </div>
-            <div class="field-error" id="emailError">
-              <i class="fas fa-exclamation-circle"></i>
-              <span id="emailErrorMsg">Please enter a valid email</span>
-            </div>
+          <div class="form-header">
+            <div class="form-tag"><span class="form-tag-dot"></span> Secure Login</div>
+            <h1 class="form-title">Sign In to <span>Dashboard</span></h1>
+            <p class="form-subtitle">Access your smart energy system</p>
           </div>
 
-          <!-- Password -->
-          <div class="form-group" id="passwordGroup">
-            <label class="form-label" for="password">
-              <i class="fas fa-lock"></i> Password
-            </label>
-            <div class="input-wrapper">
-              <i class="fas fa-lock input-icon"></i>
-              <input type="password" class="form-input" id="password" placeholder="Enter your password" autocomplete="current-password"/>
-              <button type="button" class="password-toggle" onclick="togglePassword('password','eyeIcon')" aria-label="Toggle password">
-                <i class="fas fa-eye" id="eyeIcon"></i>
-              </button>
-            </div>
-            <div class="field-error" id="passwordError">
-              <i class="fas fa-exclamation-circle"></i>
-              <span id="passwordErrorMsg">Password must be at least 6 characters</span>
-            </div>
-          </div>
-
-          <!-- Extras -->
-          <div class="form-extras">
-            <label class="remember-me">
-              <input type="checkbox" id="rememberMe"/>
-              <div class="custom-checkbox"></div>
-              <span class="remember-label">Remember me</span>
-            </label>
-            <a href="#" class="forgot-link" onclick="openForgotModal(event)">
-              Forgot Password?
-            </a>
-          </div>
-
-          <!-- Submit -->
-          <button type="submit" class="btn-submit" id="loginBtn">
-            <i class="fas fa-sign-in-alt" id="loginIcon"></i>
-            <span id="loginBtnText">Sign In</span>
-            <div class="spinner-inline" id="loginSpinner"></div>
+          <button class="btn-google" onclick="googleLogin()">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
           </button>
 
-        </form>
+          <div class="or-divider"><div class="or-line"></div><span class="or-text">or</span><div class="or-line"></div></div>
 
-        <!-- Switch -->
-        <p class="form-switch">
-          Don't have an account?
-          <a href="signup.html">Create Account</a>
-        </p>
+          <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="email"><i class="fas fa-envelope"></i> Email</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" class="form-input" id="email" placeholder="your@email.com" required/>
+              </div>
+            </div>
 
+            <div class="form-group">
+              <label class="form-label" for="password"><i class="fas fa-lock"></i> Password</label>
+              <div class="input-wrapper">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-input" id="password" placeholder="Enter password" required/>
+                <button type="button" class="password-toggle" onclick="togglePassword('password','eyeIcon')"><i class="fas fa-eye" id="eyeIcon"></i></button>
+              </div>
+            </div>
+
+            <div class="form-extras">
+              <label class="remember-me">
+                <input type="checkbox" id="rememberMe" checked/>
+                <div class="custom-checkbox"></div>
+                <span class="remember-label">Remember me</span>
+              </label>
+              <a href="#" class="forgot-link">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-submit" id="loginBtn">
+              <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+          </form>
+
+          <p class="form-switch">Don't have an account? <a href="signup.html">Create Account</a></p>
+        </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ============================================================
-       SCRIPTS
-  ============================================================ -->
   <script src="js/theme.js"></script>
   <script src="js/logo.js"></script>
-
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider,
-      sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey:            "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
-      authDomain:        "smartenergymeter-dd01b.firebaseapp.com",
-      databaseURL:       "https://smartenergymeter-dd01b-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId:         "smartenergymeter-dd01b",
-      storageBucket:     "smartenergymeter-dd01b.firebasestorage.app",
+      apiKey: "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
+      authDomain: "smartenergymeter-dd01b.firebaseapp.com",
+      databaseURL: "https://smartenergymeter-dd01b-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "smartenergymeter-dd01b",
+      storageBucket: "smartenergymeter-dd01b.firebasestorage.app",
       messagingSenderId: "299635627523",
-      appId:             "1:299635627523:web:fd8375e25803015e0de036"
+      appId: "1:299635627523:web:fd8375e25803015e0de036"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    /* Email Login */
+    // AUTO LOGIN LOGIC
+    onAuthStateChanged(auth, (user) => {
+      if (user) { window.location.replace('dashboard.html'); }
+    });
+
     window.handleLogin = async function(e) {
       e.preventDefault();
-      const email    = document.getElementById('email').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const remember = document.getElementById('rememberMe').checked;
 
-      let valid = true;
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showFieldError('emailGroup','emailError','Please enter a valid email address');
-        valid = false;
-      } else clearFieldError('emailGroup','emailError');
-
-      if (!password || password.length < 6) {
-        showFieldError('passwordGroup','passwordError','Password must be at least 6 characters');
-        valid = false;
-      } else clearFieldError('passwordGroup','passwordError');
-
-      if (!valid) return;
-
-      setLoginLoading(true);
+      document.getElementById('loginBtn').textContent = 'Signing In...';
       try {
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, password);
-        Toast.success('Login successful! Redirecting...');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
       } catch (err) {
-        setLoginLoading(false);
-        Toast.error(getFirebaseError(err.code));
+        document.getElementById('loginBtn').innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        alert('Error: ' + err.message);
       }
     };
 
-    /* Google Login */
     window.googleLogin = async function() {
-      try {
-        await signInWithPopup(auth, provider);
-        Toast.success('Google login successful! Redirecting...');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
-      } catch (err) {
-        Toast.error(getFirebaseError(err.code));
-      }
+      try { await signInWithPopup(auth, provider); } 
+      catch (err) { alert('Error: ' + err.message); }
     };
-
-    /* Reset Email */
-    window.sendResetEmail = async function() {
-      const email = document.getElementById('resetEmail').value.trim();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        Toast.error('Please enter a valid email address');
-        return;
-      }
-      const btn = document.getElementById('resetBtn');
-      const spinner = document.getElementById('resetSpinner');
-      const txt = document.getElementById('resetBtnText');
-      btn.disabled = true;
-      spinner.style.display = 'block';
-      txt.textContent = 'Sending...';
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        Toast.success('Reset link sent! Check your email 📧');
-        closeForgotModal();
-      } catch (err) {
-        Toast.error(getFirebaseError(err.code));
-      } finally {
-        btn.disabled = false;
-        spinner.style.display = 'none';
-        txt.textContent = 'Send Reset Link';
-      }
-    };
-
-    function getFirebaseError(code) {
-      const errors = {
-        'auth/user-not-found':       'No account found with this email.',
-        'auth/wrong-password':       'Incorrect password. Please try again.',
-        'auth/invalid-email':        'Invalid email address format.',
-        'auth/user-disabled':        'This account has been disabled.',
-        'auth/too-many-requests':    'Too many failed attempts. Try again later.',
-        'auth/network-request-failed':'Network error. Check your connection.',
-        'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
-        'auth/invalid-credential':   'Invalid credentials. Check email & password.',
-      };
-      return errors[code] || 'An error occurred. Please try again.';
-    }
   </script>
-
-  <!-- UI Helpers -->
   <script>
     function togglePassword(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon  = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye','fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash','fa-eye');
-      }
+      const input = document.getElementById(inputId), icon = document.getElementById(iconId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
     }
-
-    function showFieldError(groupId, errorId, msg) {
-      const group = document.getElementById(groupId);
-      const error = document.getElementById(errorId);
-      const input = group.querySelector('.form-input');
-      input.classList.add('error');
-      const span = error.querySelector('span');
-      if (span) span.textContent = msg;
-      error.classList.add('show');
-    }
-
-    function clearFieldError(groupId, errorId) {
-      const group = document.getElementById(groupId);
-      const error = document.getElementById(errorId);
-      const input = group.querySelector('.form-input');
-      input.classList.remove('error');
-      error.classList.remove('show');
-    }
-
-    document.getElementById('email').addEventListener('input', () => clearFieldError('emailGroup','emailError'));
-    document.getElementById('password').addEventListener('input', () => clearFieldError('passwordGroup','passwordError'));
-
-    function setLoginLoading(loading) {
-      const btn = document.getElementById('loginBtn');
-      const spinner = document.getElementById('loginSpinner');
-      const txt = document.getElementById('loginBtnText');
-      const icon = document.getElementById('loginIcon');
-      btn.disabled = loading;
-      spinner.style.display = loading ? 'block' : 'none';
-      icon.style.display = loading ? 'none' : 'inline';
-      txt.textContent = loading ? 'Signing In...' : 'Sign In';
-    }
-
-    function openForgotModal(e) {
-      if (e) e.preventDefault();
-      document.getElementById('forgotModal').classList.add('open');
-    }
-    function closeForgotModal() {
-      document.getElementById('forgotModal').classList.remove('open');
-      document.getElementById('resetEmail').value = '';
-    }
-    document.getElementById('forgotModal').addEventListener('click', function(e) {
-      if (e.target === this) closeForgotModal();
-    });
-
-    document.getElementById('password').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-      }
-    });
+    // Make mobile back button visible
+    if(window.innerWidth <= 850) { document.querySelector('.auth-right .back-home').style.display = 'flex'; }
   </script>
-
 </body>
 </html>
