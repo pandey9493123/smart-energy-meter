@@ -12,7 +12,7 @@
   /* ============================================================
      CONSTANTS
   ============================================================ */
-  const STORAGE_KEY  = 'sem-theme';
+  const STORAGE_KEY  = 'sem-theme-v2';
   const THEME_DARK   = 'dark';
   const THEME_LIGHT  = 'light';
   const THEME_AUTO   = 'auto';
@@ -91,7 +91,7 @@
         meta.name = 'theme-color';
         document.head.appendChild(meta);
       }
-      meta.content = theme === THEME_DARK ? '#0B1120' : '#F8FAFC';
+      meta.content = theme === THEME_DARK ? '#111827' : '#F7F8FA';
     },
 
     /* ── Update all toggle button icons on page ── */
@@ -167,7 +167,7 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: ${isDarkToLight ? '#F8FAFC' : '#0B1120'};
+        background: ${isDarkToLight ? '#F7F8FA' : '#111827'};
         transform: translate(-50%, -50%) scale(0);
         pointer-events: none;
         z-index: 99998;

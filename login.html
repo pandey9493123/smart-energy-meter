@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#0B1120"/>
+  <meta name="theme-color" content="#F7F8FA"/>
   <title>Login – Smart Energy Meter</title>
   <meta name="description" content="Login to your Smart Energy Meter dashboard"/>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg"/>
 
   <!-- Global Theme -->
-  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="CSS/theme.css"/>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -227,6 +227,8 @@
       .form-extras { flex-direction: row; justify-content: space-between; }
     }
   </style>
+  <!-- Human-designed V2 visual system -->
+  <link rel="stylesheet" href="CSS/v2.css"/>
 </head>
 
 <body>
@@ -326,7 +328,7 @@
   <script src="js/logo.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCm4144uYkh7f2Kx8hxlqqMUjYs4sudmDA",
@@ -341,10 +343,18 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // Keep Firebase session available so returning users are signed in automatically.
+    // The checkbox still controls whether the email/password session survives browser restarts.
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+    // Complete Google redirect login when popup/redirect flow returns to this page.
+    getRedirectResult(auth).catch(() => {});
 
     // AUTO LOGIN LOGIC
     onAuthStateChanged(auth, (user) => {
-      if (user) { window.location.replace('dashboard.html'); }
+      if (user) window.location.replace('dashboard.html');
     });
 
     window.handleLogin = async function(e) {
@@ -364,8 +374,19 @@
     };
 
     window.googleLogin = async function() {
-      try { await signInWithPopup(auth, provider); } 
-      catch (err) { alert('Error: ' + err.message); }
+      const btn = document.querySelector('.btn-google');
+      if (btn) { btn.disabled = true; btn.classList.add('is-loading'); }
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        // Popup is fastest on desktop. If the browser blocks it, use Firebase redirect.
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          try { await signInWithRedirect(auth, provider); return; } catch (redirectErr) { err = redirectErr; }
+        }
+        if (btn) { btn.disabled = false; btn.classList.remove('is-loading'); }
+        alert('Google sign-in failed: ' + (err.message || 'Please try again.'));
+      }
     };
   </script>
   <script>

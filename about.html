@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#0B1120"/>
+  <meta name="theme-color" content="#F7F8FA"/>
   <title>About – Smart Energy Meter</title>
   <meta name="description" content="Learn about the Smart Energy Meter project, our mission, team, and the technology behind it."/>
 
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
-  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg"/>
+  <link rel="stylesheet" href="CSS/theme.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <style>
@@ -420,6 +420,57 @@
       z-index: 1;
       font-weight: 600;
     }
+    /* Team leader — subtle, human-designed motion */
+    .team-card-detailed.leader-card {
+      border-color: rgba(37,99,235,0.28);
+      background:
+        linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+        linear-gradient(135deg, rgba(37,99,235,0.55), rgba(22,163,74,0.32)) border-box;
+      border: 1px solid transparent;
+    }
+    .team-card-detailed.leader-card::after {
+      content: '';
+      position: absolute;
+      width: 150px; height: 150px;
+      top: -85px; right: -65px;
+      border: 1px solid rgba(37,99,235,0.14);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform .55s ease, opacity .55s ease;
+    }
+    .team-card-detailed.leader-card:hover::after {
+      transform: scale(1.12);
+      opacity: .75;
+    }
+    .leader-card .team-avatar-lg {
+      animation: leaderBreath 4.5s ease-in-out infinite;
+    }
+    .leader-card .team-role-badge.leader {
+      position: relative;
+      overflow: hidden;
+    }
+    .leader-card .team-role-badge.leader::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: -45%; width: 24%;
+      background: rgba(255,255,255,.28);
+      transform: skewX(-18deg);
+      animation: leaderShimmer 5s ease-in-out infinite;
+    }
+    @keyframes leaderBreath {
+      0%,100% { transform: translateY(0); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+      50% { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(37,99,235,.12); }
+    }
+    @keyframes leaderShimmer {
+      0%, 65% { left: -45%; opacity: 0; }
+      72% { opacity: 1; }
+      88%,100% { left: 125%; opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .leader-card .team-avatar-lg,
+      .leader-card .team-role-badge.leader::after { animation: none; }
+    }
+
     .team-role-badge.leader {
       background: rgba(245,158,11,0.15);
       border-color: rgba(245,158,11,0.4);
@@ -557,6 +608,8 @@
       .hamburger { display: block; }
     }
   </style>
+  <!-- Human-designed V2 visual system -->
+  <link rel="stylesheet" href="CSS/v2.css"/>
 </head>
 
 <body>
@@ -663,7 +716,7 @@
         <h2 class="section-title">Meet The <span class="highlight">Team</span></h2>
       </div>
       <div class="team-grid-detailed">
-        <div class="team-card-detailed">
+        <div class="team-card-detailed leader-card">
           <div class="team-avatar-lg avatar-1">👩</div>
           <div class="team-role-badge leader">⭐ Team Leader</div>
           <div class="team-name-lg">Srilaxmi</div>
@@ -749,17 +802,17 @@
             </div>
           </div>
           <div class="tech-item">
-            <div class="tech-icon-sm"><i class="fas fa-bolt"></i></div>
+            <div class="tech-icon-sm"><i class="fas fa-gauge-high"></i></div>
             <div class="tech-info">
-              <div class="tech-name">ZMCT103C</div>
-              <div class="tech-desc">Current sensor module</div>
+              <div class="tech-name">PZEM-004T V3</div>
+              <div class="tech-desc">Energy measurement module for voltage, current, power and energy</div>
             </div>
           </div>
           <div class="tech-item">
-            <div class="tech-icon-sm"><i class="fas fa-plug"></i></div>
+            <div class="tech-icon-sm"><i class="fas fa-toggle-on"></i></div>
             <div class="tech-info">
-              <div class="tech-name">ZMPT101B</div>
-              <div class="tech-desc">Voltage sensor module</div>
+              <div class="tech-name">Relay Module</div>
+              <div class="tech-desc">Load switching and overload protection</div>
             </div>
           </div>
         </div>
